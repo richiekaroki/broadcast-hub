@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Richard Karoki — Full Stack Developer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ── Tokens ─────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:         #080808;
+  --surface:    #101010;
+  --card:       #161616;
+  --elevated:   #1e1e1e;
+  --orange:     #E8593C;
+  --orange-dim: rgba(232,89,60,0.1);
+  --orange-glow:rgba(232,89,60,0.18);
+  --green:      #22C55E;
+  --amber:      #F59E0B;
+  --text:       #F0EDE8;
+  --muted:      #6B6860;
+  --subtle:     #2A2A2A;
+  --border:     rgba(255,255,255,0.07);
+  --ff-display: 'Syne', sans-serif;
+  --ff-body:    'DM Sans', sans-serif;
+  --ff-mono:    'JetBrains Mono', monospace;
+}
+
+/* ── Reset ──────────────────────────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--ff-body);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--subtle);border-radius:2px}
+
+/* ── Typography ─────────────────────────────────────────────────────────────── */
+h1,h2,h3,h4{font-family:var(--ff-display);font-weight:700;line-height:1.1;letter-spacing:-0.01em}
+
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes fadeUp   {from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn   {from{opacity:0}to{opacity:1}}
+@keyframes scanline {0%{top:-4px}100%{top:100%}}
+@keyframes blink    {0%,100%{opacity:1}50%{opacity:0}}
+@keyframes ticker   {0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes spin     {from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes glow     {0%,100%{box-shadow:0 0 0 0 var(--orange-glow)}50%{box-shadow:0 0 30px 6px var(--orange-glow)}}
+@keyframes shimmer  {0%{background-position:-400px 0}100%{background-position:400px 0}}
+
+.fade-up{opacity:0;animation:fadeUp .6s cubic-bezier(.22,1,.36,1) forwards}
+.d1{animation-delay:.08s}.d2{animation-delay:.16s}.d3{animation-delay:.24s}
+.d4{animation-delay:.32s}.d5{animation-delay:.40s}.d6{animation-delay:.48s}
+
+/* ── Layout ─────────────────────────────────────────────────────────────────── */
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+section{padding:96px 0}
+
+/* ── Nav ────────────────────────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:56px;display:flex;align-items:center;background:rgba(8,8,8,0.9);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;width:100%}
+.nav-logo{font-family:var(--ff-display);font-size:16px;font-weight:700;letter-spacing:.04em}
+.nav-logo span{color:var(--orange)}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:13px;color:var(--muted);transition:color .15s}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{padding:7px 18px;background:var(--orange);border-radius:6px;font-size:13px;font-weight:600;font-family:var(--ff-display);letter-spacing:.04em;color:#fff;transition:background .15s,transform .15s}
+.nav-cta:hover{background:#F0694C;transform:translateY(-1px)}
+.nav-ham{display:none;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;padding:6px 8px}
+
+/* ── Hero ───────────────────────────────────────────────────────────────────── */
+#hero{min-height:100vh;display:flex;align-items:center;position:relative;overflow:hidden;padding-top:56px}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;pointer-events:none}
+.hero-glow{position:absolute;top:20%;left:50%;transform:translateX(-50%);width:700px;height:400px;background:radial-gradient(ellipse,var(--orange-glow) 0%,transparent 65%);pointer-events:none}
+.hero-inner{position:relative;z-index:1;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;background:var(--orange-dim);border:1px solid rgba(232,89,60,.3);border-radius:20px;font-size:11px;font-family:var(--ff-mono);color:var(--orange);letter-spacing:.08em;text-transform:uppercase;margin-bottom:24px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:glow 2s ease-in-out infinite;display:inline-block;flex-shrink:0}
+.hero-title{font-size:clamp(44px,6vw,72px);font-weight:800;line-height:.95;text-transform:uppercase;margin-bottom:20px}
+.hero-title .orange{color:var(--orange)}
+.hero-sub{font-size:15px;color:var(--muted);max-width:440px;line-height:1.75;margin-bottom:32px}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:12px 26px;background:var(--orange);border:none;border-radius:8px;color:#fff;font-size:13px;font-weight:600;font-family:var(--ff-display);letter-spacing:.04em;cursor:pointer;transition:background .15s,transform .15s,box-shadow .15s}
+.btn-primary:hover{background:#F0694C;transform:translateY(-1px);box-shadow:0 6px 24px rgba(232,89,60,.3)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:11px 24px;background:transparent;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;transition:border-color .15s,background .15s;font-family:var(--ff-body)}
+.btn-ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.03)}
+
+/* Terminal card */
+.terminal{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+.term-bar{display:flex;align-items:center;gap:6px;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.dot{width:10px;height:10px;border-radius:50%}
+.term-title{font-family:var(--ff-mono);font-size:11px;color:var(--muted);margin-left:6px;letter-spacing:.04em}
+.term-body{padding:20px;font-family:var(--ff-mono);font-size:12px;line-height:1.8}
+.term-line{display:flex;gap:8px;margin-bottom:2px}
+.term-prompt{color:var(--orange)}
+.term-cmd{color:var(--text)}
+.term-out{color:var(--muted);padding-left:20px}
+.term-out.green{color:var(--green)}
+.term-out.amber{color:var(--amber)}
+.cursor{display:inline-block;width:8px;height:14px;background:var(--orange);vertical-align:middle;animation:blink 1s step-end infinite}
+
+/* Ticker */
+.ticker-wrap{overflow:hidden;background:var(--orange);height:30px;display:flex;align-items:center}
+.ticker-track{display:flex;gap:60px;white-space:nowrap;animation:ticker 28s linear infinite}
+.ticker-track:hover{animation-play-state:paused}
+.ticker-item{font-size:11px;font-family:var(--ff-mono);color:#fff;letter-spacing:.05em}
+
+/* ── Stack section ──────────────────────────────────────────────────────────── */
+#stack{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.section-label{font-size:10px;font-family:var(--ff-mono);color:var(--orange);letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px}
+.section-title{font-size:clamp(28px,4vw,44px);font-weight:800;text-transform:uppercase;margin-bottom:16px}
+.section-sub{color:var(--muted);font-size:14px;max-width:520px;line-height:1.75;margin-bottom:48px}
+
+.stack-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.stack-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 20px;transition:border-color .2s,transform .2s,box-shadow .2s;cursor:default}
+.stack-card:hover{border-color:rgba(232,89,60,.3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.stack-icon{font-size:22px;margin-bottom:12px}
+.stack-name{font-family:var(--ff-display);font-size:14px;font-weight:600;margin-bottom:4px;letter-spacing:.02em}
+.stack-desc{font-size:11px;color:var(--muted);line-height:1.6}
+.stack-tag{display:inline-block;margin-top:8px;padding:2px 8px;background:var(--orange-dim);border:1px solid rgba(232,89,60,.2);border-radius:10px;font-size:10px;color:var(--orange);font-family:var(--ff-mono)}
+
+/* ── Featured project ───────────────────────────────────────────────────────── */
+#projects{}
+.project-hero{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px}
+.project-hero-header{padding:28px 32px 24px;border-bottom:1px solid var(--border)}
+.project-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;background:var(--orange-dim);border:1px solid rgba(232,89,60,.3);border-radius:20px;font-size:10px;font-family:var(--ff-mono);color:var(--orange);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
+.project-name{font-size:clamp(24px,3.5vw,38px);font-weight:800;text-transform:uppercase;margin-bottom:10px}
+.project-name span{color:var(--orange)}
+.project-desc{font-size:14px;color:var(--muted);max-width:600px;line-height:1.75;margin-bottom:20px}
+.project-links{display:flex;gap:10px;flex-wrap:wrap}
+.project-link{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:7px;font-size:12px;font-weight:600;transition:all .15s;cursor:pointer;font-family:var(--ff-body)}
+.project-link.primary{background:var(--orange);color:#fff;border:none}
+.project-link.primary:hover{background:#F0694C;transform:translateY(-1px)}
+.project-link.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+.project-link.ghost:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.03)}
+
+/* Feature grid inside project */
+.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border)}
+.feature-cell{padding:20px 24px;border-right:1px solid var(--border)}
+.feature-cell:last-child{border-right:none}
+.feature-num{font-family:var(--ff-display);font-size:26px;font-weight:800;color:var(--orange);margin-bottom:4px}
+.feature-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+
+/* Tech badges row */
+.tech-row{display:flex;flex-wrap:wrap;gap:8px;padding:20px 32px;background:var(--surface);border-top:1px solid var(--border)}
+.tech-badge{padding:4px 12px;background:var(--elevated);border:1px solid var(--border);border-radius:20px;font-size:11px;font-family:var(--ff-mono);color:var(--muted);transition:all .15s}
+.tech-badge:hover{border-color:rgba(232,89,60,.3);color:var(--orange)}
+.tech-badge.highlight{border-color:rgba(232,89,60,.3);color:var(--orange);background:var(--orange-dim)}
+
+/* Other projects */
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.proj-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color .2s,transform .2s;display:flex;flex-direction:column;gap:12px}
+.proj-card:hover{border-color:rgba(232,89,60,.25);transform:translateY(-2px)}
+.proj-card-top{display:flex;justify-content:space-between;align-items:flex-start}
+.proj-card-icon{font-size:24px}
+.proj-card-name{font-family:var(--ff-display);font-size:16px;font-weight:700;margin-bottom:5px}
+.proj-card-desc{font-size:12px;color:var(--muted);line-height:1.7;flex:1}
+.proj-card-foot{display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border)}
+.proj-stack{display:flex;gap:6px;flex-wrap:wrap}
+.proj-tag-sm{padding:2px 8px;background:var(--elevated);border:1px solid var(--border);border-radius:10px;font-size:10px;font-family:var(--ff-mono);color:var(--muted)}
+.proj-github{font-size:11px;color:var(--orange);font-family:var(--ff-mono);transition:opacity .15s}
+.proj-github:hover{opacity:.75}
+
+/* ── Experience ─────────────────────────────────────────────────────────────── */
+#experience{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.exp-list{display:flex;flex-direction:column;gap:14px}
+.exp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;transition:border-color .2s}
+.exp-card:hover{border-color:rgba(255,255,255,.12)}
+.exp-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:12px;flex-wrap:wrap}
+.exp-role{font-family:var(--ff-display);font-size:17px;font-weight:700}
+.exp-meta{text-align:right}
+.exp-company{font-size:13px;font-weight:500;color:var(--orange)}
+.exp-period{font-size:11px;color:var(--muted);font-family:var(--ff-mono);margin-top:2px}
+.exp-bullets{list-style:none;display:flex;flex-direction:column;gap:6px}
+.exp-bullets li{font-size:13px;color:var(--muted);padding-left:16px;position:relative;line-height:1.6}
+.exp-bullets li::before{content:'▸';position:absolute;left:0;color:var(--orange);font-size:10px;top:3px}
+
+/* ── About / Match section ──────────────────────────────────────────────────── */
+#about{}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start}
+.about-bio{font-size:14px;color:var(--muted);line-height:1.85;margin-bottom:24px}
+.about-bio strong{color:var(--text);font-weight:500}
+
+/* Match checklist */
+.match-list{display:flex;flex-direction:column;gap:10px}
+.match-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;transition:border-color .15s}
+.match-item:hover{border-color:rgba(232,89,60,.2)}
+.match-check{width:20px;height:20px;border-radius:50%;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--green);flex-shrink:0;margin-top:1px}
+.match-text{font-size:12px;color:var(--muted);line-height:1.6}
+.match-text strong{color:var(--text);font-weight:500;display:block;margin-bottom:1px;font-size:13px}
+
+/* Education card */
+.edu-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.edu-degree{font-family:var(--ff-display);font-size:16px;font-weight:700;margin-bottom:5px}
+.edu-school{font-size:13px;color:var(--orange);margin-bottom:3px}
+.edu-year{font-size:11px;color:var(--muted);font-family:var(--ff-mono)}
+.edu-honour{display:inline-block;margin-top:10px;padding:3px 10px;background:var(--orange-dim);border:1px solid rgba(232,89,60,.25);border-radius:10px;font-size:11px;color:var(--orange);font-family:var(--ff-mono)}
+
+/* ── Contact ────────────────────────────────────────────────────────────────── */
+#contact{background:var(--orange);position:relative;overflow:hidden}
+.contact-grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:44px 44px;pointer-events:none}
+.contact-inner{position:relative;z-index:1;text-align:center}
+.contact-title{font-size:clamp(32px,5vw,60px);font-weight:900;text-transform:uppercase;color:#fff;line-height:1;margin-bottom:14px}
+.contact-sub{color:rgba(255,255,255,.75);font-size:15px;margin-bottom:36px}
+.contact-links{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.contact-btn{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:8px;font-size:13px;font-weight:600;font-family:var(--ff-display);letter-spacing:.04em;cursor:pointer;transition:all .15s}
+.contact-btn.white{background:#fff;color:var(--orange);border:none}
+.contact-btn.white:hover{background:#f5f5f5;transform:translateY(-1px)}
+.contact-btn.outline{background:transparent;border:2px solid rgba(255,255,255,.5);color:#fff}
+.contact-btn.outline:hover{background:rgba(255,255,255,.08);transform:translateY(-1px)}
+.contact-details{display:flex;justify-content:center;gap:32px;margin-top:32px;flex-wrap:wrap}
+.contact-detail{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.85);font-family:var(--ff-mono)}
+
+/* ── Footer ─────────────────────────────────────────────────────────────────── */
+footer{background:var(--card);border-top:1px solid var(--border);padding:24px;text-align:center}
+.foot-text{font-size:11px;color:var(--muted);font-family:var(--ff-mono)}
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr}
+  .terminal{display:none}
+  .about-grid{grid-template-columns:1fr}
+  .feature-grid{grid-template-columns:1fr 1fr}
+  .feature-cell:nth-child(3){border-top:1px solid var(--border);border-right:none;grid-column:span 2}
+}
+@media(max-width:640px){
+  section{padding:64px 0}
+  .nav-links{display:none}
+  .nav-ham{display:flex;align-items:center;justify-content:center}
+  .hero-actions .btn-ghost{display:none}
+  .feature-grid{grid-template-columns:1fr}
+  .feature-cell{border-right:none;border-bottom:1px solid var(--border)}
+  .feature-cell:last-child{border-bottom:none}
+  .stack-grid{grid-template-columns:1fr 1fr}
+  .projects-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Ticker ─────────────────────────────────────────────────────────────────── -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">▸ AVAILABLE FOR HIRE — NAIROBI, KENYA</span>
+    <span class="ticker-item">▸ FULLSTACK DEVELOPER — NODE.JS · NESTJS · REACT · POSTGRESQL · MONGODB · REDIS</span>
+    <span class="ticker-item">▸ OPEN TO ONSITE &amp; REMOTE</span>
+    <span class="ticker-item">▸ B.Sc. COMPUTER TECHNOLOGY — JKUAT 2024</span>
+    <span class="ticker-item">▸ AVAILABLE FOR HIRE — NAIROBI, KENYA</span>
+    <span class="ticker-item">▸ FULLSTACK DEVELOPER — NODE.JS · NESTJS · REACT · POSTGRESQL · MONGODB · REDIS</span>
+    <span class="ticker-item">▸ OPEN TO ONSITE &amp; REMOTE</span>
+    <span class="ticker-item">▸ B.Sc. COMPUTER TECHNOLOGY — JKUAT 2024</span>
+  </div>
+</div>
+
+<!-- ── Nav ────────────────────────────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <div class="nav-logo">RK<span>.</span></div>
+    <div class="nav-links">
+      <a href="#stack">Stack</a>
+      <a href="#projects">Projects</a>
+      <a href="#experience">Experience</a>
+      <a href="#about">About</a>
+      <a href="#contact" class="nav-cta">Hire Me</a>
+    </div>
+    <button class="nav-ham" onclick="this.style.display='none'" aria-label="menu">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────────── -->
+<section id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="container">
+    <div class="hero-inner">
+      <!-- Left -->
+      <div>
+        <div class="hero-badge fade-up d1">
+          <span class="live-dot"></span>
+          Open to work · Nairobi, Kenya
+        </div>
+        <h1 class="hero-title fade-up d2">
+          RICHARD<br/>
+          <span class="orange">KAROKI</span><br/>
+          KAROKI
+        </h1>
+        <p class="hero-sub fade-up d3">
+          Full Stack Developer specialising in <strong style="color:var(--text)">Node.js / NestJS</strong>, 
+          <strong style="color:var(--text)">React</strong>, and high-performance 
+          <strong style="color:var(--text)">REST API design</strong>. 
+          3+ years building production-grade systems from database schema through to polished frontend.
+        </p>
+        <div class="hero-actions fade-up d4">
+          <a href="#projects" class="btn-primary">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            View Projects
+          </a>
+          <a href="mailto:karokirichard522@gmail.com" class="btn-ghost">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+            Get in Touch
+          </a>
+        </div>
+      </div>
+
+      <!-- Right — terminal -->
+      <div class="terminal fade-up d5">
+        <div class="term-bar">
+          <div class="dot" style="background:#FF5F57"></div>
+          <div class="dot" style="background:#FFBE2E"></div>
+          <div class="dot" style="background:#28C840"></div>
+          <span class="term-title">broadcast-hub — api — node v20</span>
+        </div>
+        <div class="term-body">
+          <div class="term-line"><span class="term-prompt">~</span><span class="term-cmd">npm run start:dev</span></div>
+          <div class="term-out">[NestJS] Starting application...</div>
+          <div class="term-out green">✓ TypeORM connected (PostgreSQL 17.6)</div>
+          <div class="term-out green">✓ Mongoose connected (MongoDB 8.2)</div>
+          <div class="term-out green">✓ Redis connected (ioredis)</div>
+          <div class="term-out green">✓ JwtAuthGuard registered globally</div>
+          <div class="term-out green">✓ ThrottlerGuard active (100 req/min)</div>
+          <div class="term-out amber">» Auth        [POST /api/v1/auth/login]</div>
+          <div class="term-out amber">» Auth        [POST /api/v1/auth/logout]</div>
+          <div class="term-out amber">» Content     [GET  /api/v1/content]</div>
+          <div class="term-out amber">» Programs    [GET  /api/v1/programs]</div>
+          <div class="term-out amber">» Dashboard   [GET  /api/v1/dashboard]</div>
+          <div class="term-out green">✓ Swagger: https://broadcast-hub-api.up.railway.app/api/docs</div>
+          <div class="term-line" style="margin-top:4px"><span class="term-prompt">~</span><span class="term-cmd">&nbsp;</span><span class="cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stack ──────────────────────────────────────────────────────────────────── -->
+<section id="stack">
+  <div class="container">
+    <div class="section-label">Technical Stack</div>
+    <h2 class="section-title">What I Build With</h2>
+    <p class="section-sub">Production-tested technologies matching the exact requirements of senior fullstack roles in media and broadcast infrastructure.</p>
+
+    <div class="stack-grid">
+      <div class="stack-card fade-up d1">
+        <div class="stack-icon">⚡</div>
+        <div class="stack-name">NestJS / Node.js</div>
+        <div class="stack-desc">Modular monorepo architecture, dependency injection, guards, interceptors, custom decorators.</div>
+        <span class="stack-tag">Primary Backend</span>
+      </div>
+      <div class="stack-card fade-up d2">
+        <div class="stack-icon">⚛</div>
+        <div class="stack-name">React 18 + Vite</div>
+        <div class="stack-desc">Redux Toolkit state management, TanStack Query, React Router v6, Tailwind CSS v4.</div>
+        <span class="stack-tag">Primary Frontend</span>
+      </div>
+      <div class="stack-card fade-up d3">
+        <div class="stack-icon">🐘</div>
+        <div class="stack-name">PostgreSQL</div>
+        <div class="stack-desc">TypeORM entities, relational schema design, indexing, query optimisation, UUID PKs.</div>
+        <span class="stack-tag">Relational DB</span>
+      </div>
+      <div class="stack-card fade-up d4">
+        <div class="stack-icon">🍃</div>
+        <div class="stack-name">MongoDB</div>
+        <div class="stack-desc">Mongoose schemas, compound indexes for time-window aggregations, analytics event store.</div>
+        <span class="stack-tag">Document Store</span>
+      </div>
+      <div class="stack-card fade-up d5">
+        <div class="stack-icon">🔴</div>
+        <div class="stack-name">Redis</div>
+        <div class="stack-desc">ioredis caching layer, TTL strategies, cache invalidation on write, 5-min content cache.</div>
+        <span class="stack-tag">Cache Layer</span>
+      </div>
+      <div class="stack-card fade-up d6">
+        <div class="stack-icon">🔐</div>
+        <div class="stack-name">Auth &amp; Security</div>
+        <div class="stack-desc">JWT (dual-secret access + refresh), Google OAuth2, bcrypt, RBAC with 5 roles, refresh token rotation.</div>
+        <span class="stack-tag">OAuth 2.0 / OIDC</span>
+      </div>
+      <div class="stack-card fade-up d1">
+        <div class="stack-icon">🐳</div>
+        <div class="stack-name">Docker &amp; DevOps</div>
+        <div class="stack-desc">Multi-stage Dockerfiles, Docker Compose, GitHub Actions CI/CD with real container services.</div>
+        <span class="stack-tag">Infrastructure</span>
+      </div>
+      <div class="stack-card fade-up d2">
+        <div class="stack-icon">🧪</div>
+        <div class="stack-name">Testing</div>
+        <div class="stack-desc">Jest unit tests (mocked repos + Redis), SuperTest E2E against real Postgres/Mongo/Redis. 80%+ coverage target.</div>
+        <span class="stack-tag">Jest + SuperTest</span>
+      </div>
+      <div class="stack-card fade-up d3">
+        <div class="stack-icon">🏗</div>
+        <div class="stack-name">PHP / Laravel</div>
+        <div class="stack-desc">3+ years production Laravel. Eloquent ORM, artisan CLI, Blade, API resources, job queues.</div>
+        <span class="stack-tag">Legacy Backend</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Projects ───────────────────────────────────────────────────────────────── -->
+<section id="projects">
+  <div class="container">
+    <div class="section-label">Portfolio</div>
+    <h2 class="section-title">Selected Work</h2>
+    <p class="section-sub">Systems built end-to-end — from PostgreSQL schema through to production-ready frontend, each wired to real APIs.</p>
+
+    <!-- Featured: BroadcastHub -->
+    <div class="project-hero fade-up d1">
+      <div class="project-hero-header">
+        <div class="project-tag">
+          <span class="live-dot"></span>
+          Featured Project
+        </div>
+        <h3 class="project-name">Broadcast<span>Hub</span></h3>
+        <p class="project-desc">
+          A media &amp; broadcast content management platform built as a portfolio centrepiece.
+          NestJS v11 monorepo backend (PostgreSQL + MongoDB + Redis), React 18 frontend
+          with dark dashboard UI, full editorial workflow (draft → review → publish),
+          Google OAuth2, JWT refresh token rotation, and a full test suite.
+          Designed to directly mirror the requirements of high-velocity broadcast infrastructure roles.
+        </p>
+        <div class="project-links">
+          <a href="https://github.com/richiekaroki/broadcast-hub" target="_blank" class="project-link primary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            GitHub
+          </a>
+          <a href="https://broadcast-hub-web.vercel.app" target="_blank" class="project-link ghost">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Live Demo
+          </a>
+          <a href="https://broadcast-hub-api.up.railway.app/api/docs" class="project-link ghost">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            API Docs
+          </a>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-cell">
+          <div class="feature-num">3</div>
+          <div class="feature-label">Databases in prod</div>
+        </div>
+        <div class="feature-cell">
+          <div class="feature-num">5</div>
+          <div class="feature-label">RBAC roles</div>
+        </div>
+        <div class="feature-cell">
+          <div class="feature-num">80%+</div>
+          <div class="feature-label">Test coverage</div>
+        </div>
+      </div>
+
+      <div class="tech-row">
+        <span class="tech-badge highlight">NestJS v11</span>
+        <span class="tech-badge highlight">React 18</span>
+        <span class="tech-badge highlight">PostgreSQL</span>
+        <span class="tech-badge highlight">MongoDB</span>
+        <span class="tech-badge highlight">Redis</span>
+        <span class="tech-badge">TypeORM</span>
+        <span class="tech-badge">Mongoose</span>
+        <span class="tech-badge">JWT / OAuth2</span>
+        <span class="tech-badge">Docker</span>
+        <span class="tech-badge">GitHub Actions</span>
+        <span class="tech-badge">Jest</span>
+        <span class="tech-badge">SuperTest</span>
+        <span class="tech-badge">Tailwind v4</span>
+        <span class="tech-badge">Redux Toolkit</span>
+        <span class="tech-badge">TanStack Query</span>
+        <span class="tech-badge">Swagger / OpenAPI</span>
+      </div>
+    </div>
+
+    <!-- Other projects -->
+    <div class="projects-grid">
+      <div class="proj-card fade-up d2">
+        <div class="proj-card-top">
+          <div class="proj-card-icon">🎟</div>
+          <a href="https://github.com/richiekaroki/booking-system" target="_blank" class="proj-github">github ↗</a>
+        </div>
+        <div class="proj-card-name">Booking &amp; Ticketing System</div>
+        <p class="proj-card-desc">REST APIs for bookings, user management, status updates, and reporting. Relational schema with constraints, indexing, and RBAC authentication flows.</p>
+        <div class="proj-card-foot">
+          <div class="proj-stack">
+            <span class="proj-tag-sm">Laravel</span>
+            <span class="proj-tag-sm">MySQL</span>
+            <span class="proj-tag-sm">React</span>
+            <span class="proj-tag-sm">REST</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="proj-card fade-up d3">
+        <div class="proj-card-top">
+          <div class="proj-card-icon">⚖</div>
+          <a href="https://github.com/richiekaroki/court-case-management" target="_blank" class="proj-github">github ↗</a>
+        </div>
+        <div class="proj-card-name">Court Case Management</div>
+        <p class="proj-card-desc">Full-stack case tracking system with REST APIs for case workflows, user auth, and reporting. Modular architecture, TypeScript, relational schema design.</p>
+        <div class="proj-card-foot">
+          <div class="proj-stack">
+            <span class="proj-tag-sm">Node.js</span>
+            <span class="proj-tag-sm">TypeScript</span>
+            <span class="proj-tag-sm">PostgreSQL</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="proj-card fade-up d4">
+        <div class="proj-card-top">
+          <div class="proj-card-icon">🏠</div>
+          <a href="https://github.com/richiekaroki/house-recommender" target="_blank" class="proj-github">github ↗</a>
+        </div>
+        <div class="proj-card-name">House Recommender — Final Year</div>
+        <p class="proj-card-desc">ML-powered housing recommender. Led a team through the full lifecycle: data pipeline, model training (scikit-learn + TensorFlow), React frontend. 85% prediction accuracy.</p>
+        <div class="proj-card-foot">
+          <div class="proj-stack">
+            <span class="proj-tag-sm">Python</span>
+            <span class="proj-tag-sm">TensorFlow</span>
+            <span class="proj-tag-sm">React</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Experience ──────────────────────────────────────────────────────────────── -->
+<section id="experience">
+  <div class="container">
+    <div class="section-label">Work History</div>
+    <h2 class="section-title">Experience</h2>
+    <p class="section-sub">3+ years delivering production-grade backend systems across freelance, internship, and support roles.</p>
+
+    <div class="exp-list">
+      <div class="exp-card fade-up d1">
+        <div class="exp-header">
+          <div>
+            <div class="exp-role">Full Stack Developer &amp; Technical Instructor</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:3px">Freelance — Independent</div>
+          </div>
+          <div class="exp-meta">
+            <div class="exp-company">Self-Employed</div>
+            <div class="exp-period">Nairobi, Kenya</div>
+          </div>
+        </div>
+        <ul class="exp-bullets">
+          <li>Designed and deployed full-stack web applications using Laravel, Node.js/NestJS, React, and REST APIs end-to-end.</li>
+          <li>Architected backend services for authentication, transactional workflows, reporting, and data processing pipelines.</li>
+          <li>Designed relational database schemas with integrity constraints, indexing, and query optimisation strategies.</li>
+          <li>Resolved production issues through structured debugging, root cause analysis, and fix documentation.</li>
+          <li>Refactored legacy modules to improve modularity, readability, and long-term maintainability.</li>
+          <li>Maintained technical documentation for APIs, system workflows, and deployment changes.</li>
+        </ul>
+      </div>
+
+      <div class="exp-card fade-up d2">
+        <div class="exp-header">
+          <div>
+            <div class="exp-role">Software Engineer Intern — Backend &amp; Applications</div>
+          </div>
+          <div class="exp-meta">
+            <div class="exp-company">SunTech Business Solutions</div>
+            <div class="exp-period">Sep 2022 – Dec 2022 · Nairobi</div>
+          </div>
+        </div>
+        <ul class="exp-bullets">
+          <li>Supported backend services handling live transactional workflows during high-traffic events.</li>
+          <li>Developed and maintained RESTful API endpoints for system integrations and user operations.</li>
+          <li>Investigated and resolved data inconsistencies affecting transactional accuracy.</li>
+          <li>Optimised SQL queries to reduce latency and improve database performance under load.</li>
+          <li>Maintained technical documentation for APIs and system behaviour to ensure continuity.</li>
+        </ul>
+      </div>
+
+      <div class="exp-card fade-up d3">
+        <div class="exp-header">
+          <div>
+            <div class="exp-role">Frontend Developer &amp; Systems Support</div>
+          </div>
+          <div class="exp-meta">
+            <div class="exp-company">Nammy International Travel</div>
+            <div class="exp-period">Nairobi, Kenya</div>
+          </div>
+        </div>
+        <ul class="exp-bullets">
+          <li>Maintained backend systems supporting booking and transactional operations.</li>
+          <li>Integrated third-party APIs ensuring data consistency across booking workflows.</li>
+          <li>Performed database validation checks to ensure data integrity and operational stability.</li>
+          <li>Resolved system discrepancies through structured debugging in collaboration with business users.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── About / Why Hire Me ─────────────────────────────────────────────────────── -->
+<section id="about">
+  <div class="container">
+    <div class="section-label">About Me</div>
+    <h2 class="section-title">Why I Fit</h2>
+
+    <div class="about-grid">
+      <div>
+        <p class="about-bio">
+          I'm a <strong>Backend-first Full Stack Developer</strong> based in Nairobi with a B.Sc. in Computer Technology from JKUAT. 
+          My work spans the full application layer — from PostgreSQL schema design and NestJS service architecture 
+          through to React dashboards and DevOps pipelines.
+        </p>
+        <p class="about-bio">
+          The BroadcastHub project was built specifically to demonstrate production-readiness for 
+          <strong>high-velocity media infrastructure roles</strong> — dual-database persistence, Redis caching, 
+          OAuth2 security, role-based access for editorial workflows, and a full CI/CD pipeline with container orchestration.
+        </p>
+        <p class="about-bio">
+          I thrive in roles that require both <strong>backend rigour</strong> (security-first API design, database performance, 
+          test coverage) and <strong>frontend ownership</strong> (React state management, responsive UI, Figma-to-code).
+        </p>
+        <div style="margin-top:24px">
+          <div class="edu-card">
+            <div class="edu-degree">B.Sc. Computer Technology</div>
+            <div class="edu-school">Jomo Kenyatta University of Agriculture &amp; Technology</div>
+            <div class="edu-year">Juja, Kenya · 2024</div>
+            <span class="edu-honour">2nd Class Honours</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Job match checklist -->
+      <div>
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-family:var(--ff-mono);margin-bottom:14px">Job requirement match</div>
+        <div class="match-list">
+          <div class="match-item">
+            <div class="match-check">✓</div>
+            <div class="match-text">
+              <strong>Vue.js / React — Frontend Mastery</strong>
+              React 18 + Vite + Tailwind v4. State management with Redux Toolkit and TanStack Query. Pixel-perfect Figma-to-code.
+            </div>
+          </div>
+          <div class="match-item">
+            <div class="match-check">✓</div>
+            <div class="match-text">
+              <strong>Node.js / NestJS — Robust Backend</strong>
+              NestJS v11 monorepo, modular architecture, guards, strategies, TypeORM entities, REST API design.
+            </div>
+          </div>
+          <div class="match-item">
+            <div class="match-check">✓</div>
+            <div class="match-text">
+              <strong>OAuth 2.0 — Security-First Mindset</strong>
+              Google OAuth2 via Passport, dual-secret JWT, refresh token rotation with bcrypt-hashed DB store, logout revocation.
+            </div>
+          </div>
+          <div class="match-item">
+            <div class="match-check">✓</div>
+            <div class="match-text">
+              <strong>PostgreSQL + MongoDB — Database Proficiency</strong>
+              TypeORM relational schema, compound Mongoose indexes, cross-database architecture in a single monorepo.
+            </div>
+          </div>
+          <div class="match-item">
+            <div class="match-check">✓</div>
+            <div class="match-text">
+              <strong>Redis Caching Layer — Performance Engineering</strong>
+              ioredis with TTL-based cache, invalidation on write mutations, ~6ms warm-cache response demonstrated.
+            </div>
+          </div>
+          <div class="match-item">
+            <div class="match-check">✓</div>
+            <div class="match-text">
+              <strong>Docker — Infrastructure &amp; Tools</strong>
+              Multi-stage Dockerfiles for API and web, Docker Compose for local dev, GitHub Actions CI/CD pipeline.
+            </div>
+          </div>
+          <div class="match-item">
+            <div class="match-check">✓</div>
+            <div class="match-text">
+              <strong>Code Reviews &amp; Mentoring — Technical Leadership</strong>
+              Technical Instructor background, documented API standards, structured debugging with root cause documentation.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Contact ────────────────────────────────────────────────────────────────── -->
+<section id="contact">
+  <div class="contact-grid-bg"></div>
+  <div class="container">
+    <div class="contact-inner">
+      <h2 class="contact-title">LET'S BUILD<br/>SOMETHING</h2>
+      <p class="contact-sub">Available for fullstack roles in Nairobi · Also open to remote positions</p>
+      <div class="contact-links">
+        <a href="mailto:karokirichard522@gmail.com" class="contact-btn white">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,12 2,6"/></svg>
+          Email Me
+        </a>
+        <a href="https://linkedin.com/in/richard-karoki007" target="_blank" class="contact-btn outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
+          LinkedIn
+        </a>
+        <a href="https://github.com/richiekaroki" target="_blank" class="contact-btn outline">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.38.6.11.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.75-1.33-1.75-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.005 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.21.7.82.58C20.56 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+      <div class="contact-details">
+        <span class="contact-detail">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.72A2 2 0 012 .99h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.92a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0121 16.92z"/></svg>
+          +254 748 754 251
+        </span>
+        <span class="contact-detail">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Nairobi, Kenya
+        </span>
+        <span class="contact-detail">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Full-Time · Contract
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-text">© 2026 Richard Kabue Karoki · karokirichard522@gmail.com · Built for the IndsAfri Fullstack Developer role</div>
+</footer>
+
+<script>
+// Intersection observer for fade-up animations
+const els = document.querySelectorAll('.fade-up');
+const io  = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.style.animationPlayState = 'running'; io.unobserve(e.target); } });
+}, { threshold: 0.12 });
+
+els.forEach(el => {
+  el.style.animationPlayState = 'paused';
+  io.observe(el);
+});
+
+// Nav active state
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a[href^="#"]');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 80) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === `#${current}` ? 'var(--text)' : '';
+  });
+}, { passive: true });
+
+// Smooth count-up for numbers
+document.querySelectorAll('.feature-num').forEach(el => {
+  const target = parseFloat(el.textContent);
+  if (isNaN(target)) return;
+  const suffix = el.textContent.replace(/[\d.]/g, '');
+  const observer = new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting) return;
+    observer.disconnect();
+    let start = 0;
+    const step = target / 40;
+    const tick = () => {
+      start = Math.min(start + step, target);
+      el.textContent = (Number.isInteger(target) ? Math.round(start) : start.toFixed(1)) + suffix;
+      if (start < target) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  }, { threshold: 0.5 });
+  observer.observe(el);
+});
+</script>
+</body>
+</html>

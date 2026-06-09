@@ -1,0 +1,24 @@
+{
+  "name": "broadcast-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Media & Broadcast Content Management Platform — NestJS + React monorepo",
+  "author": "Richard Kabue Karoki <karokirichard522@gmail.com>",
+  "scripts": {
+    "api": "cd apps/api && npm run start:dev",
+    "web": "cd apps/web && npm run dev",
+    "seed": "cd apps/api && npm run seed",
+    "test": "cd apps/api && npm test",
+    "test:cov": "cd apps/api && npm run test:cov",
+    "test:e2e": "cd apps/api && npm run test:e2e",
+    "install:all": "cd apps/api && npm install && cd ../web && npm install",
+    "build:all": "cd apps/api && npm run build && cd ../web && npm run build",
+    "docker:dev": "docker compose up -d redis",
+    "docker:all": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}
