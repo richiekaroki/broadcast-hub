@@ -43,6 +43,7 @@ jobs:
           --health-retries 5
 
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       NODE_ENV: test
       DATABASE_URL: postgres://bh_user:bh_pass@localhost:5432/broadcasthub
       MONGODB_URL: mongodb://localhost:27017/broadcasthub
@@ -77,6 +78,10 @@ jobs:
       - name: Run unit tests with coverage
         working-directory: apps/api
         run: npm run test:cov
+
+      - name: Seed database
+        working-directory: apps/api
+        run: npm run seed
 
       - name: Run E2E tests
         working-directory: apps/api

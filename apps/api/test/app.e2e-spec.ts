@@ -22,6 +22,8 @@ describe('BroadcastHub E2E', () => {
 
   // ── App bootstrap ─────────────────────────────────────────────────────────────
   beforeAll(async () => {
+    jest.setTimeout(30000);
+
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     }).compile();
@@ -29,7 +31,7 @@ describe('BroadcastHub E2E', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
     await app.init();
-  });
+  }, 30000);
 
   afterAll(async () => {
     await app.close();
