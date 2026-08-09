@@ -4,39 +4,37 @@ services:
     build: ./apps/api
     ports: ['4000:4000']
     env_file: .env
-    depends_on: [postgres, mongo, redis]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
     networks: [bh-net]
 
   web:
     build: ./apps/web
     ports: ['3000:80']
     depends_on: [api]
+    restart: unless-stopped
     networks: [bh-net]
 
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: bh_user
-      POSTGRES_PASSWORD: bh_pass
-      POSTGRES_DB: broadcasthub
+      POSTGRES_USER: ${POSTGRES_USER:-bh_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bh_pass}
+      POSTGRES_DB: ${POSTGRES_DB:-broadcasthub}
     ports: ['5432:5432']
     volumes: ['pgdata:/var/lib/postgresql/data']
-    networks: [bh-net]
-
-  mongo:
-    image: mongo:7.0
-    ports: ['27017:27017']
-    volumes: ['mongodata:/data/db']
-    networks: [bh-net]
-
-  redis:
-    image: redis:7-alpine
-    ports: ['6379:6379']
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-bh_user}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
     networks: [bh-net]
 
 volumes:
   pgdata:
-  mongodata:
 
 networks:
   bh-net:

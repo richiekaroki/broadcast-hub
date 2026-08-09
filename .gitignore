@@ -1,32 +1,85 @@
-# Dependencies
+# ==================== DEPENDENCIES ====================
 node_modules/
-.pnp
-.pnp.js
+*/node_modules/
 
-# Build outputs
+# ==================== BUILD OUTPUTS ====================
 dist/
+dist-ssr/
 build/
+*.tgz
+*.tar.gz
 
-# Environment
+# ==================== ENVIRONMENT VARIABLES ====================
 .env
 .env.local
 .env.*.local
 
-# Logs
-*.log
-npm-debug.log*
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
+# ==================== IDE & EDITOR ====================
 .vscode/
 .idea/
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Test
+# ==================== OS GENERATED FILES ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashese
+hthumbs.db
+Thumbs.db
+Desktop.ini
+
+# ==================== LOGS ====================
+logs/
+*.log
+
+# ==================== RUNTIME DATA ====================
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ==================== COVERAGE & TESTING ====================
 coverage/
+*/coverage/
+.nyc_output/
+*.lcov
+playwright-report/
+test-results/
 
-# Docker volumes (local data)
-pgdata/
-mongodata/
+# ==================== TYPESCRIPT ====================
+*.tsbuildinfo
+next-env.d.ts
+
+# ==================== TEMPORARY FILES ====================
+tmp/
+temp/
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+
+# ==================== EDITOR EXTENSIONS ====================
+!.vscode/extensions.json
+
+# ==================== AGENT / SKILL TOOLING ====================
+.agents/
+.impeccable/
+.playwright-mcp/
+skills-lock.json
+opencode.json
+DESIGN.md
+PRODUCT.md
+IMPLEMENTATION_PLAN.md
+
+# ==================== NEXT.JS ====================
+.next/
+out/
+.vercel
+
