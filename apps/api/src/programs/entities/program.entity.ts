@@ -16,31 +16,31 @@ export enum ProgramStatus {
 @Entity('programs')
 export class Program {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column({ type: 'timestamp' })
-  startTime: Date;
+  startTime!: Date;
 
   @Column({ type: 'timestamp' })
-  endTime: Date;
+  endTime!: Date;
 
   // FIX 3: column now typed as the enum — TypeORM stores 'scheduled' etc. as before
   @Column({ type: 'enum', enum: ProgramStatus, default: ProgramStatus.SCHEDULED })
-  status: ProgramStatus;
+  status!: ProgramStatus;
 
   @ManyToOne(() => User, { eager: true, nullable: true })
   @JoinColumn({ name: 'presenter_id' })
-  presenter: User;
+  presenter!: User;
 
   @Column({ name: 'presenter_id', nullable: true })
-  presenterId: string;
+  presenterId?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

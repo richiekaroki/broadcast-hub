@@ -40,9 +40,8 @@ export class ProgramsController {
   @Patch(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.PRESENTER)
   @ApiOperation({ summary: 'Modify a scheduled program' })
-  // FIX 9: UpdateProgramDto replaces the `data as any` cast
   update(@Param('id') id: string, @Body() dto: UpdateProgramDto) {
-    return this.programsService.update(id, dto as any);
+    return this.programsService.update(id, dto);
   }
 
   @Patch(':id/cancel')

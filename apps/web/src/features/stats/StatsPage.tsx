@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { MobileSidebar } from '../../components/MobileSidebar';
+import { DashboardLayout } from '../../components/DashboardLayout';
 import { fetchDashboardStats, fetchContent } from '../../api/client';
 
 function StatBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
@@ -43,15 +43,8 @@ export function StatsPage() {
     : 0;
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-base)' }}>
-      <MobileSidebar activeItem="stats" />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <header style={{ height: '52px', background: 'var(--bg-raised)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 20px', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, letterSpacing: '0.03em' }}>Stats</span>
-        </header>
-
-        <main style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <DashboardLayout activeItem="stats">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
           {/* Top stat row */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -139,8 +132,7 @@ export function StatsPage() {
               ))}
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+        </div>
+    </DashboardLayout>
   );
 }

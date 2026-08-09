@@ -11,6 +11,7 @@ import {
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { ContentService } from './content.service';
 import { CreateContentDto } from './dto/create-content.dto';
+import { UpdateContentDto } from './dto/update-content.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -62,7 +63,7 @@ export class ContentController {
   @Patch(':id')
   @Roles(UserRole.SUPER_ADMIN, UserRole.EDITOR)
   @ApiOperation({ summary: 'Update content (draft only)' })
-  update(@Param('id') id: string, @Body() dto: Partial<CreateContentDto>) {
+  update(@Param('id') id: string, @Body() dto: UpdateContentDto) {
     return this.contentService.update(id, dto);
   }
 

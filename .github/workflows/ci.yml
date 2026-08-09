@@ -14,12 +14,12 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: bh_user
-          POSTGRES_PASSWORD: bh_pass
-          POSTGRES_DB: broadcasthub
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'bh_user' }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'bh_pass' }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'broadcasthub' }}
         ports: ['5432:5432']
         options: >-
-          --health-cmd "pg_isready -U bh_user"
+          --health-cmd "pg_isready -U ${{ secrets.POSTGRES_USER || 'bh_user' }}"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -45,7 +45,7 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       NODE_ENV: test
-      DATABASE_URL: postgres://bh_user:bh_pass@localhost:5432/broadcasthub
+      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER || 'bh_user' }}:${{ secrets.POSTGRES_PASSWORD || 'bh_pass' }}@localhost:5432/${{ secrets.POSTGRES_DB || 'broadcasthub' }}
       MONGODB_URL: mongodb://localhost:27017/broadcasthub
       REDIS_URL: redis://localhost:6379
       JWT_SECRET: ${{ secrets.JWT_SECRET }}

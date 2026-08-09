@@ -1,4 +1,4 @@
-import { MobileSidebar } from '../../components/MobileSidebar';
+import { DashboardLayout } from '../../components/DashboardLayout';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setAuthenticated } from '../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
@@ -18,15 +18,8 @@ export function SettingsPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-base)' }}>
-      <MobileSidebar activeItem="settings" />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <header style={{ height: '52px', background: 'var(--bg-raised)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', padding: '0 20px', position: 'sticky', top: 0, zIndex: 10 }}>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, letterSpacing: '0.03em' }}>Settings</span>
-        </header>
-
-        <main style={{ flex: 1, padding: '20px', overflowY: 'auto', maxWidth: '600px' }}>
+    <DashboardLayout activeItem="settings">
+      <div style={{ maxWidth: '600px' }}>
 
           {/* Profile card */}
           <div className="card anim-slide-up d-1" style={{ padding: '20px', marginBottom: '14px' }}>
@@ -106,8 +99,7 @@ export function SettingsPage() {
               Sign out of all devices
             </button>
           </div>
-        </main>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

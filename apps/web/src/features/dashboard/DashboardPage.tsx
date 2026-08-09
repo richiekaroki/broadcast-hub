@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { MobileSidebar } from '../../components/MobileSidebar';
+import { DashboardLayout } from '../../components/DashboardLayout';
 import { ContentTable } from '../../components/ContentTable';
 import { CacheIndicator } from '../../components/CacheIndicator';
 import { fetchDashboardStats, fetchContent } from '../../api/client';
@@ -116,24 +116,10 @@ export function DashboardPage() {
   });
 
   return (
-    <div className="layout-root" style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-page)' }}>
-      <MobileSidebar activeItem="dashboard" />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-
-        {/* Top bar */}
-        <header style={{
-          height:        '56px',
-          background:    'var(--color-bg-sidebar)',
-          borderBottom:  '1px solid var(--color-border)',
-          display:       'flex',
-          alignItems:    'center',
-          padding:       '0 22px',
-          gap:           '14px',
-          position:      'sticky',
-          top:           0,
-          zIndex:        10,
-        }}>
+    <DashboardLayout
+      activeItem="dashboard"
+      headerRight={
+        <>
           <div style={{ flex: 1, maxWidth: '460px', position: 'relative' }}>
             <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-muted)', fontSize: '13px' }}>🔍</span>
             <input
@@ -165,46 +151,42 @@ export function DashboardPage() {
               <div style={{ fontSize: '10px', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{userRole}</div>
             </div>
           </div>
-        </header>
-
-        {/* Body */}
-        <main style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
-
-          {/* Metric cards row */}
-          <div className="metrics-row">
-            <MetricCard label="Total Users"  value={stats?.totalUsers ?? null}       icon={<IconUsers />}  change="12%"  trend="up"      loading={statsLoading} />
-            <MetricCard label="Content"      value={stats?.totalContent ?? null}     icon={<IconDoc />}    change="8.4%" trend="up"      loading={statsLoading} />
-            <MetricCard label="Published"    value={stats?.publishedContent ?? null} icon={<IconCheck />}  change="0%"   trend="neutral" loading={statsLoading} />
-            <MetricCard label="Views"        value={stats?.todayViews ?? null}       icon={<IconEye />}    change="2.1%" trend="down"    loading={statsLoading} />
-          </div>
-
-          {/* Content table */}
-          <div style={{ marginBottom: '22px' }}>
-            <ContentTable items={content} loading={contentLoading} />
-          </div>
-
-          {/* Bottom row */}
-          <div className="bottom-row">
-
-            {/* Traffic chart — glowing curve */}
-            <TrafficChart />
-
-            {/* System Health — donut rings matching Figma */}
-            <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '20px 22px' }}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, letterSpacing: '0.02em', marginBottom: '24px' }}>
-                System Health
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', justifyItems: 'center' }}>
-                <DonutRing pct={24}   value="24%"   label="Load"    color="#22C55E" />
-                <DonutRing pct={60}   value="142ms" label="Latency" color="#F59E0B" />
-                <DonutRing pct={75}   value="6.2G"  label="Redis"   color="#F59E0B" />
-                <DonutRing pct={99.9} value="99.9%" label="Uptime"  color="#22C55E" />
-              </div>
-            </div>
-          </div>
-        </main>
+        </>
+      }
+    >
+      {/* Metric cards row */}
+      <div className="metrics-row">
+        <MetricCard label="Total Users"  value={stats?.totalUsers ?? null}       icon={<IconUsers />}  change="12%"  trend="up"      loading={statsLoading} />
+        <MetricCard label="Content"      value={stats?.totalContent ?? null}     icon={<IconDoc />}    change="8.4%" trend="up"      loading={statsLoading} />
+        <MetricCard label="Published"    value={stats?.publishedContent ?? null} icon={<IconCheck />}  change="0%"   trend="neutral" loading={statsLoading} />
+        <MetricCard label="Views"        value={stats?.todayViews ?? null}       icon={<IconEye />}    change="2.1%" trend="down"    loading={statsLoading} />
       </div>
-    </div>
+
+      {/* Content table */}
+      <div style={{ marginBottom: '22px' }}>
+        <ContentTable items={content} loading={contentLoading} />
+      </div>
+
+      {/* Bottom row */}
+      <div className="bottom-row">
+
+        {/* Traffic chart — glowing curve */}
+        <TrafficChart />
+
+        {/* System Health — donut rings matching Figma */}
+        <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '12px', padding: '20px 22px' }}>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, letterSpacing: '0.02em', marginBottom: '24px' }}>
+            System Health
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', justifyItems: 'center' }}>
+            <DonutRing pct={24}   value="24%"   label="Load"    color="#22C55E" />
+            <DonutRing pct={60}   value="142ms" label="Latency" color="#F59E0B" />
+            <DonutRing pct={75}   value="6.2G"  label="Redis"   color="#F59E0B" />
+            <DonutRing pct={99.9} value="99.9%" label="Uptime"  color="#22C55E" />
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }
 

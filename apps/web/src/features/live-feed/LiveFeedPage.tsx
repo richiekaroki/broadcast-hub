@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { MobileSidebar } from '../../components/MobileSidebar';
+import { DashboardLayout } from '../../components/DashboardLayout';
 import { fetchPrograms, Program } from '../../api/client';
 
 // ── Top stat cards ────────────────────────────────────────────────────────────
@@ -203,117 +203,97 @@ export function LiveFeedPage() {
   }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-bg-page)' }}>
-      <MobileSidebar activeItem="live" />
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-
-        {/* Top bar */}
-        <header style={{
-          height:       '56px',
-          background:   'var(--color-bg-sidebar)',
-          borderBottom: '1px solid var(--color-border)',
-          display:      'flex',
-          alignItems:   'center',
-          padding:      '0 22px',
-          justifyContent: 'space-between',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: '18px', fontWeight: 700, letterSpacing: '0.04em' }}>
-              Control Center
-            </span>
-            <span style={{
-              padding:      '3px 8px',
-              background:   'rgba(232,89,60,0.15)',
-              border:       '1px solid rgba(232,89,60,0.4)',
-              borderRadius: '4px',
-              fontSize:     '10px',
-              fontWeight:   700,
-              color:        'var(--color-orange)',
-              letterSpacing: '0.08em',
-              animation:    'pulse-dot 2s ease-in-out infinite',
-            }}>LIVE</span>
-          </div>
+    <DashboardLayout
+      activeItem="live"
+      headerRight={
+        <>
+          <span style={{
+            padding:      '3px 8px',
+            background:   'rgba(232,89,60,0.15)',
+            border:       '1px solid rgba(232,89,60,0.4)',
+            borderRadius: '4px',
+            fontSize:     '10px',
+            fontWeight:   700,
+            color:        'var(--color-orange)',
+            letterSpacing: '0.08em',
+            animation:    'pulse-dot 2s ease-in-out infinite',
+          }}>LIVE</span>
           <button type="button" style={{
             background: 'none', border: 'none', color: 'var(--color-muted)',
             cursor: 'pointer', fontSize: '18px',
           }}>🔔</button>
-        </header>
-
-        {/* Body */}
-        <main style={{ flex: 1, padding: '24px', overflowY: 'auto' }}>
-
-          {/* Stat cards row */}
-          <div style={{ display: 'flex', gap: '12px', marginBottom: '28px' }}>
-            <StatCard icon="👁" label="Total Concurrent" value="14.2K" sub="+12% from last hour" />
-            <StatCard icon="⚠" label="Alert Flags"      value="03"    sub="Critical intervention required" alert />
-            <StatCard icon="⚡" label="Node Latency"     value="24ms"  sub="Optimal performance" />
-            <StatCard icon="≡" label="Bandwidth"        value="1.2Tb/s" sub="Peak utilization at 64%" />
-          </div>
-
-          {/* Live Feed section */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 600, letterSpacing: '0.02em' }}>
-              Live Feed
-            </span>
-            <button type="button" style={{
-              padding:      '7px 14px',
-              background:   'transparent',
-              border:       '1px solid var(--color-border)',
-              borderRadius: '7px',
-              color:        'var(--color-muted)',
-              fontSize:     '12px',
-              cursor:       'pointer',
-              fontFamily:   'var(--font-body)',
-              display:      'flex',
-              alignItems:   'center',
-              gap:          '6px',
-            }}>
-              ≡ Filters
-            </button>
-          </div>
-
-          {/* Stream cards */}
-          {isLoading ? (
-            <div style={{ display: 'flex', gap: '14px' }}>
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} style={{ flex: 1, background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '12px', overflow: 'hidden' }}>
-                  <div className="skeleton" style={{ height: '140px' }} />
-                  <div style={{ padding: '14px 16px' }}>
-                    <div className="skeleton" style={{ height: 14, width: '70%', marginBottom: 8 }} />
-                    <div className="skeleton" style={{ height: 11, width: '50%', marginBottom: 14 }} />
-                    <div style={{ display: 'flex', gap: 6 }}>
-                      {[1,2,3].map(j => <div key={j} className="skeleton" style={{ height: 28, width: 60, borderRadius: 6 }} />)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ display: 'flex', gap: '14px' }}>
-              {streams.map((s, i) => (
-                <StreamCard key={i} {...s} />
-              ))}
-            </div>
-          )}
-
-          {/* Empty state when no live programs */}
-          {!isLoading && livePrograms.length === 0 && (
-            <div style={{
-              marginTop:    '12px',
-              padding:      '12px 16px',
-              background:   'rgba(232,89,60,0.06)',
-              border:       '1px solid rgba(232,89,60,0.2)',
-              borderRadius: '8px',
-              fontSize:     '12px',
-              color:        'var(--color-muted)',
-            }}>
-              💡 No live programs found in the backend — showing demo cards above. Run the seed script or create a program via <code style={{ fontFamily: 'var(--font-mono)' }}>POST /api/v1/programs</code>
-            </div>
-          )}
-        </main>
+        </>
+      }
+    >
+      {/* Stat cards row */}
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '28px' }}>
+        <StatCard icon="👁" label="Total Concurrent" value="14.2K" sub="+12% from last hour" />
+        <StatCard icon="⚠" label="Alert Flags"      value="03"    sub="Critical intervention required" alert />
+        <StatCard icon="⚡" label="Node Latency"     value="24ms"  sub="Optimal performance" />
+        <StatCard icon="≡" label="Bandwidth"        value="1.2Tb/s" sub="Peak utilization at 64%" />
       </div>
-    </div>
+
+      {/* Live Feed section */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 600, letterSpacing: '0.02em' }}>
+          Live Feed
+        </span>
+        <button type="button" style={{
+          padding:      '7px 14px',
+          background:   'transparent',
+          border:       '1px solid var(--color-border)',
+          borderRadius: '7px',
+          color:        'var(--color-muted)',
+          fontSize:     '12px',
+          cursor:       'pointer',
+          fontFamily:   'var(--font-body)',
+          display:      'flex',
+          alignItems:   'center',
+          gap:          '6px',
+        }}>
+          ≡ Filters
+        </button>
+      </div>
+
+      {/* Stream cards */}
+      {isLoading ? (
+        <div style={{ display: 'flex', gap: '14px' }}>
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} style={{ flex: 1, background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '12px', overflow: 'hidden' }}>
+              <div className="skeleton" style={{ height: '140px' }} />
+              <div style={{ padding: '14px 16px' }}>
+                <div className="skeleton" style={{ height: 14, width: '70%', marginBottom: 8 }} />
+                <div className="skeleton" style={{ height: 11, width: '50%', marginBottom: 14 }} />
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {[1,2,3].map(j => <div key={j} className="skeleton" style={{ height: 28, width: 60, borderRadius: 6 }} />)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', gap: '14px' }}>
+          {streams.map((s, i) => (
+            <StreamCard key={i} {...s} />
+          ))}
+        </div>
+      )}
+
+      {/* Empty state when no live programs */}
+      {!isLoading && livePrograms.length === 0 && (
+        <div style={{
+          marginTop:    '12px',
+          padding:      '12px 16px',
+          background:   'rgba(232,89,60,0.06)',
+          border:       '1px solid rgba(232,89,60,0.2)',
+          borderRadius: '8px',
+          fontSize:     '12px',
+          color:        'var(--color-muted)',
+        }}>
+          💡 No live programs found in the backend — showing demo cards above. Run the seed script or create a program via <code style={{ fontFamily: 'var(--font-mono)' }}>POST /api/v1/programs</code>
+        </div>
+      )}
+    </DashboardLayout>
   );
 }
 

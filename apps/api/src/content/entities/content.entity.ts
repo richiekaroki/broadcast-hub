@@ -15,31 +15,31 @@ export enum ContentStatus {
 @Entity('content')
 export class Content {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column('text')
-  body: string;
+  body!: string;
 
   @Column({ type: 'enum', enum: ContentStatus, default: ContentStatus.DRAFT })
-  status: ContentStatus;
+  status!: ContentStatus;
 
   // FIX 2: authorId tracks who created the content — critical for editorial workflow
   @Column({ name: 'author_id', nullable: true })
-  authorId: string;
+  authorId!: string;
 
   @ManyToOne(() => User, { eager: false, nullable: true })
   @JoinColumn({ name: 'author_id' })
-  author: User;
+  author!: User;
 
   @Column({ nullable: true })
   rejectionReason?: string;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
