@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../store/hooks';
 import { setAuthenticated, setUser } from '../../store/authSlice';
-import { tokens } from '../../api/client';
-import { toast } from '../../components/Toast';
+import { tokens } from '../../api';
+import { toast } from '../../components/infra/Toast';
 
 /**
  * Route: /auth/callback

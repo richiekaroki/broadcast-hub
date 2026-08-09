@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { fetchContent, fetchPrograms, fetchDashboardStats } from '../../api/client';
+import { fetchContent, fetchPrograms, fetchDashboardStats } from '../../api';
 
 // ── Fallback demo data (shown when API is empty or unavailable) ───────────────
 const DEMO_CONTENT = [

@@ -68,6 +68,41 @@ cd ../web && npm run dev         # → http://localhost:3000
 
 ---
 
+## Project structure
+
+```
+broadcast-hub/
+├── apps/
+│   ├── api/                    # NestJS backend
+│   │   ├── src/
+│   │   │   ├── auth/           # JWT, magic link, OAuth, guards
+│   │   │   ├── content/        # Content CRUD + workflow states
+│   │   │   ├── programs/       # Broadcast schedule
+│   │   │   ├── dashboard/      # Stats endpoint
+│   │   │   ├── email/          # Magic link email templates
+│   │   │   └── seed.ts         # Demo data seeder
+│   │   └── test/
+│   └── web/                    # React frontend
+│       └── src/
+│           ├── api/            # HTTP client, auth, typed endpoints
+│           ├── components/
+│           │   ├── ui/         # Reusable: ContentTable, MetricCard
+│           │   ├── layout/     # Sidebar, DashboardLayout
+│           │   └── infra/      # Toast, ErrorBoundary
+│           ├── features/       # One folder per route
+│           │   ├── auth/       # Login, verify, OAuth callback
+│           │   ├── dashboard/
+│           │   ├── content/
+│           │   ├── live-feed/
+│           │   ├── stats/
+│           │   ├── settings/
+│           │   └── landing/
+│           └── store/          # Redux (auth slice)
+└── plans/                     # UX decisions, review docs
+```
+
+---
+
 ## API
 
 | Method | Endpoint | Auth | Description |

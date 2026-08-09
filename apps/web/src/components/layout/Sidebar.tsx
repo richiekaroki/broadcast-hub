@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import { setAuthenticated } from '../store/authSlice';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { setAuthenticated } from '../../store/authSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 type NavItem = 'dashboard' | 'live' | 'content' | 'stats' | 'settings';

@@ -4,8 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { useAppSelector } from './store/hooks';
-import { Toaster } from './components/Toast';
-import { ErrorBoundary } from './components/ErrorBoundary';
+import { Toaster } from './components/infra/Toast';
+import { ErrorBoundary } from './components/infra/ErrorBoundary';
 
 // Lazy-loaded pages — only the visited route is bundled
 const LandingPage    = lazy(() => import('./features/landing/LandingPage').then(m => ({ default: m.LandingPage })));
@@ -17,9 +17,6 @@ const LiveFeedPage   = lazy(() => import('./features/live-feed/LiveFeedPage').th
 const ContentPage    = lazy(() => import('./features/content/ContentPage').then(m => ({ default: m.ContentPage })));
 const StatsPage      = lazy(() => import('./features/stats/StatsPage').then(m => ({ default: m.StatsPage })));
 const SettingsPage   = lazy(() => import('./features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
-
-// Mobile CSS (appended to index.css behaviours)
-import './mobile.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {

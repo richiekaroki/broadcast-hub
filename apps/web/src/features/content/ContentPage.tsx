@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { DashboardLayout } from '../../components/DashboardLayout';
-import { toast } from '../../components/Toast';
+import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { toast } from '../../components/infra/Toast';
 import { useAppSelector } from '../../store/hooks';
 import {
   fetchContent, createContent, updateContent,
   submitContent, publishContent, rejectContent, deleteContent,
-  ContentItem, ContentStatus,
-} from '../../api/client';
+} from '../../api';
+import type { ContentItem, ContentStatus } from '../../api';
 
 const PAGE_SIZE = 12;
 

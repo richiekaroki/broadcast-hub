@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { DashboardLayout } from '../../components/DashboardLayout';
-import { fetchDashboardStats, fetchContent } from '../../api/client';
+import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { fetchDashboardStats, fetchContent } from '../../api';
 
 function StatBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
   const pct = max > 0 ? Math.round((value / max) * 100) : 0;

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { requestMagicLink } from '../../api/client';
+import { requestMagicLink } from '../../api';
 
 export function LoginPage() {
   const [email,   setEmail]   = useState('');

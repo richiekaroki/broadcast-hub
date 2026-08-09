@@ -683,3 +683,53 @@ button:focus:not(:focus-visible) { outline: none; }
   }
   .ticker-track { animation: none !important; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   Mobile responsive layout — sidebar collapses, cards stack, tables scroll
+   Breakpoints: mobile < 640px, tablet 640-1024px, desktop > 1024px
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 1023px) {
+  .layout-root { flex-direction: column; }
+  aside {
+    position: fixed !important; top: 0; left: 0; height: 100vh; z-index: 200;
+    transform: translateX(-100%); transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+    box-shadow: 4px 0 32px rgba(0,0,0,0.6);
+  }
+  aside.open { transform: translateX(0); }
+  .sidebar-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 190;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(2px);
+  }
+  .sidebar-backdrop.open { display: block; }
+  .menu-btn { display: flex !important; }
+  .metrics-row { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; }
+  .bottom-row { grid-template-columns: 1fr !important; }
+  .header-search { display: none; }
+}
+
+@media (max-width: 639px) {
+  .metrics-row { grid-template-columns: 1fr 1fr !important; }
+  .stat-cards-row { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+  .stream-cards-row { flex-direction: column !important; }
+  .content-grid { grid-template-columns: 1fr !important; }
+  main { padding: 14px !important; }
+  header { padding: 0 12px !important; }
+  :root { font-size: 13px; }
+  h1, .display-hero { font-size: clamp(38px, 12vw, 72px) !important; }
+}
+
+.menu-btn {
+  display: none; align-items: center; justify-content: center;
+  width: 34px; height: 34px; background: none;
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
+  transition: border-color 0.15s;
+}
+.menu-btn:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+.table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+.stats-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;
+}

@@ -1,9 +1,9 @@
-import { DashboardLayout } from '../../components/DashboardLayout';
+import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setAuthenticated } from '../../store/authSlice';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../../api/client';
-import { toast } from '../../components/Toast';
+import { logout } from '../../api';
+import { toast } from '../../components/infra/Toast';
 
 export function SettingsPage() {
   const { userName, userRole, userEmail } = useAppSelector(s => s.auth);

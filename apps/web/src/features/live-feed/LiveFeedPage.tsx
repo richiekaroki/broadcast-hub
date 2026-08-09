@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { DashboardLayout } from '../../components/DashboardLayout';
-import { fetchPrograms, Program } from '../../api/client';
+import { DashboardLayout } from '../../components/layout/DashboardLayout';
+import { fetchPrograms } from '../../api';
+import type { Program } from '../../api';
 import { ReactNode } from 'react';
 
 // ── Animated counter hook ─────────────────────────────────────────────────────

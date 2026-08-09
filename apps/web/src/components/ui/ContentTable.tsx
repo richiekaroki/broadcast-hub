@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { ContentItem, ContentStatus } from '../api/client';
+import { ContentItem, ContentStatus } from '../../api';
 
 interface ContentTableProps {
   items:   ContentItem[];

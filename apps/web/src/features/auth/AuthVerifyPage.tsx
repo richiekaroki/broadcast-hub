@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAppDispatch } from '../../store/hooks';
 import { setAuthenticated, setUser } from '../../store/authSlice';
-import { verifyMagicLink } from '../../api/client';
+import { verifyMagicLink } from '../../api';
 
 export function AuthVerifyPage() {
   const dispatch  = useAppDispatch();

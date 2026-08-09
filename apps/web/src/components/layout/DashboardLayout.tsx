@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { MobileSidebar } from './MobileSidebar';
-import { useAppSelector } from '../store/hooks';
+import { useAppSelector } from '../../store/hooks';
 
 type NavItem = 'dashboard' | 'live' | 'content' | 'stats' | 'settings';
 
