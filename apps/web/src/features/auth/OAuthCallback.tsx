@@ -8,11 +8,14 @@ import { toast } from '../../components/Toast';
 /**
  * Route: /auth/callback
  *
- * The NestJS Google OAuth callback redirects here with:
- *   /auth/callback?accessToken=<jwt>&refreshToken=<jwt>
+ * The NestJS Google OAuth callback redirects here with tokens in the URL fragment:
+ *   /auth/callback#accessToken=<jwt>&refreshToken=<jwt>
+ *
+ * Fragments (#) are never sent to the server, keeping tokens out of server logs,
+ * browser history logs, and Referer headers.
  *
  * This page:
- *  1. Reads tokens from the URL query params
+ *  1. Reads tokens from the URL fragment
  *  2. Stores them in localStorage
  *  3. Decodes the JWT payload for user info
  *  4. Dispatches auth state to Redux
@@ -28,9 +31,11 @@ export function OAuthCallback() {
     if (handled.current) return;
     handled.current = true;
 
-    const params       = new URLSearchParams(window.location.search);
-    const accessToken  = params.get('accessToken');
-    const refreshToken = params.get('refreshToken');
+    // Read from URL fragment (#) instead of query params (?)
+    const hash           = window.location.hash.slice(1); // strip leading #
+    const params         = new URLSearchParams(hash);
+    const accessToken    = params.get('accessToken');
+    const refreshToken   = params.get('refreshToken');
 
     if (!accessToken || !refreshToken) {
       toast.error('OAuth failed', 'No tokens received from Google.');

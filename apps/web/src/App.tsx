@@ -5,10 +5,12 @@ import { store } from './store/store';
 import { useAppSelector, useAppDispatch } from './store/hooks';
 import { setAuthenticated } from './store/authSlice';
 import { Toaster } from './components/Toast';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Pages
 import { LandingPage }   from './features/landing/LandingPage';
 import { LoginPage }     from './features/auth/LoginPage';
+import { AuthVerifyPage } from './features/auth/AuthVerifyPage';
 import { OAuthCallback } from './features/auth/OAuthCallback';
 import { DashboardPage } from './features/dashboard/DashboardPage';
 import { LiveFeedPage }  from './features/live-feed/LiveFeedPage';
@@ -46,13 +48,14 @@ function AppRoutes() {
         <Route path="/"             element={<LandingPage />} />
         <Route path="/login"        element={<LoginPage onLogin={handleLogin} />} />
         <Route path="/auth/callback" element={<OAuthCallback />} />
+        <Route path="/auth/verify"   element={<AuthVerifyPage />} />
 
         {/* Protected */}
-        <Route path="/dashboard"   element={<PrivateRoute><DashboardPage /></PrivateRoute>} />
-        <Route path="/live-feed"   element={<PrivateRoute><LiveFeedPage  /></PrivateRoute>} />
-        <Route path="/content"     element={<PrivateRoute><ContentPage   /></PrivateRoute>} />
-        <Route path="/stats"       element={<PrivateRoute><StatsPage     /></PrivateRoute>} />
-        <Route path="/settings"    element={<PrivateRoute><SettingsPage  /></PrivateRoute>} />
+        <Route path="/dashboard"   element={<ErrorBoundary><PrivateRoute><DashboardPage /></PrivateRoute></ErrorBoundary>} />
+        <Route path="/live-feed"   element={<ErrorBoundary><PrivateRoute><LiveFeedPage  /></PrivateRoute></ErrorBoundary>} />
+        <Route path="/content"     element={<ErrorBoundary><PrivateRoute><ContentPage   /></PrivateRoute></ErrorBoundary>} />
+        <Route path="/stats"       element={<ErrorBoundary><PrivateRoute><StatsPage     /></PrivateRoute></ErrorBoundary>} />
+        <Route path="/settings"    element={<ErrorBoundary><PrivateRoute><SettingsPage  /></PrivateRoute></ErrorBoundary>} />
 
         {/* Fallback */}
         <Route path="*" element={<LandingPage />} />

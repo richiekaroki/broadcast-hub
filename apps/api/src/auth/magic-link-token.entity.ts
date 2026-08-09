@@ -1,18 +1,17 @@
 import {
   Entity, PrimaryGeneratedColumn, Column,
-  CreateDateColumn, ManyToOne, JoinColumn, Index,
+  ManyToOne, JoinColumn, CreateDateColumn, Index,
 } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 
-@Entity('refresh_tokens')
-export class RefreshToken {
+@Entity('magic_link_tokens')
+export class MagicLinkToken {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  // Stored as SHA-256 hash — raw token never persisted
   @Column()
   @Index()
-  tokenHash!: string;
+  token!: string;
 
   @Column()
   userId!: string;
@@ -24,10 +23,9 @@ export class RefreshToken {
   @Column({ type: 'timestamp' })
   expiresAt!: Date;
 
+  @Column({ default: false })
+  used!: boolean;
+
   @CreateDateColumn()
   createdAt!: Date;
-
-  get isExpired(): boolean {
-    return new Date() > this.expiresAt;
-  }
 }

@@ -4,28 +4,23 @@ import { UserRole } from '../enums/user-role.enum';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
-  // FIX 1: name column added — RegisterDto already collects it but it was silently dropped
   @Column()
-  name: string;
+  name!: string;
 
-  @Column({ name: 'password_hash', nullable: true })
-  passwordHash: string;
-
-  // FIX 5 (partial): googleId stored so OAuth re-logins match on provider ID, not just email
   @Column({ nullable: true })
   googleId?: string;
 
   @Column({ type: 'enum', enum: UserRole, default: UserRole.VIEWER })
-  role: UserRole;
+  role!: UserRole;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 }

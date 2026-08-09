@@ -9,13 +9,16 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { UsersModule } from '../users/users.module';
+import { EmailModule } from '../email/email.module';
 import { RefreshToken } from './refresh-token.entity';
+import { MagicLinkToken } from './magic-link-token.entity';
 
 @Module({
   imports: [
     UsersModule,
+    EmailModule,
     PassportModule,
-    TypeOrmModule.forFeature([RefreshToken]), // Only RefreshToken — User repo via UsersModule
+    TypeOrmModule.forFeature([RefreshToken, MagicLinkToken]),
     JwtModule.registerAsync({
       imports:    [ConfigModule],
       inject:     [ConfigService],

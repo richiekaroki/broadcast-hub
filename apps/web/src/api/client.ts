@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 // In dev: requests go to /api/v1 and Vite proxies to localhost:4000
-// In production (Vercel): VITE_API_URL=https://your-backend.railway.app
+// In production (Vercel): VITE_API_URL=https://your-backend.onrender.com
 const BASE = import.meta.env.VITE_API_URL
   ? `${import.meta.env.VITE_API_URL}/api/v1`
   : '/api/v1';
@@ -78,14 +78,12 @@ async function req<T>(path: string, options: RequestInit = {}, retry = true): Pr
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export interface TokenPair { accessToken: string; refreshToken: string; }
 
-export async function login(email: string, password: string): Promise<TokenPair> {
-  const data = await req<TokenPair>('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
-  tokens.set(data.accessToken, data.refreshToken);
-  return data;
+export async function requestMagicLink(email: string): Promise<void> {
+  await req('/auth/magic-link', { method: 'POST', body: JSON.stringify({ email }) });
 }
 
-export async function register(email: string, password: string, name: string): Promise<TokenPair> {
-  const data = await req<TokenPair>('/auth/register', { method: 'POST', body: JSON.stringify({ email, password, name }) });
+export async function verifyMagicLink(token: string): Promise<TokenPair> {
+  const data = await req<TokenPair>(`/auth/magic-link/verify?token=${encodeURIComponent(token)}`);
   tokens.set(data.accessToken, data.refreshToken);
   return data;
 }

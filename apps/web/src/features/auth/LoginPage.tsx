@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch } from '../../store/hooks';
 import { setAuthenticated, setUser } from '../../store/authSlice';
-import { login } from '../../api/client';
+import { requestMagicLink } from '../../api/client';
 
 interface LoginPageProps {
   onLogin?: () => void;
@@ -11,34 +11,89 @@ interface LoginPageProps {
 export function LoginPage({ onLogin }: LoginPageProps) {
   const dispatch  = useAppDispatch();
   const navigate  = useNavigate();
-  const [email,    setEmail]    = useState('admin@demo.com');
-  const [password, setPassword] = useState('Demo1234!');
-  const [error,    setError]    = useState('');
-  const [loading,  setLoading]  = useState(false);
+  const [email,   setEmail]   = useState('');
+  const [error,   setError]   = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent,    setSent]    = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const { accessToken, refreshToken } = await login(email, password);
-      localStorage.setItem('accessToken',  accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-
-      // Decode role from JWT for sidebar display
-      try {
-        const payload = JSON.parse(atob(accessToken.split('.')[1]));
-        dispatch(setUser({ name: email.split('@')[0], role: payload.role?.replace('_', ' '), email }));
-      } catch {}
-
-      dispatch(setAuthenticated(true));
-      onLogin?.();
-      navigate('/dashboard');
+      await requestMagicLink(email);
+      setSent(true);
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials');
+      setError(err.message || 'Failed to send magic link');
     } finally {
       setLoading(false);
     }
+  }
+
+  // If link was sent, show confirmation
+  if (sent) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: 'var(--color-bg-page)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '24px',
+      }}>
+        <div style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
+          <div style={{
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border)',
+            borderRadius: '16px',
+            padding: '40px 32px',
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📧</div>
+            <h2 style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '20px',
+              fontWeight: 700,
+              marginBottom: '8px',
+            }}>
+              Check your email
+            </h2>
+            <p style={{
+              fontSize: '13px',
+              color: 'var(--color-muted)',
+              lineHeight: 1.6,
+              marginBottom: '20px',
+            }}>
+              We sent a magic link to<br />
+              <strong style={{ color: 'var(--color-text)' }}>{email}</strong>
+            </p>
+            <p style={{
+              fontSize: '12px',
+              color: 'var(--color-muted)',
+              lineHeight: 1.6,
+            }}>
+              Click the link in the email to sign in. The link expires in 10 minutes.
+            </p>
+            <button
+              type="button"
+              onClick={() => { setSent(false); setEmail(''); }}
+              style={{
+                marginTop: '20px',
+                padding: '10px 20px',
+                background: 'transparent',
+                border: '1px solid var(--color-border)',
+                borderRadius: '8px',
+                color: 'var(--color-text)',
+                fontSize: '13px',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-body)',
+              }}
+            >
+              Use a different email
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -88,27 +143,16 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           padding:      '32px',
         }}>
           <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '24px' }}>
               <label style={labelStyle}>Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
+                autoFocus
                 style={inputStyle}
-                placeholder="admin@demo.com"
-              />
-            </div>
-
-            <div style={{ marginBottom: '24px' }}>
-              <label style={labelStyle}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                style={inputStyle}
-                placeholder="••••••••"
+                placeholder="you@example.com"
               />
             </div>
 
@@ -122,7 +166,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               </div>
             )}
 
-<button type="submit"
+            <button type="submit"
               disabled={loading}
               style={{
                 width:        '100%',
@@ -139,7 +183,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 marginBottom: '12px',
               }}
             >
-              {loading ? 'Signing in…' : 'Sign In'}
+              {loading ? 'Sending…' : 'Send Magic Link'}
             </button>
 
             {/* Google OAuth */}
@@ -172,7 +216,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           </form>
         </div>
 
-        {/* Demo credentials */}
+        {/* Info */}
         <div style={{
           marginTop:    '20px',
           background:   'rgba(232,89,60,0.06)',
@@ -182,21 +226,14 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           fontSize:     '12px',
           color:        'var(--color-muted)',
         }}>
-          <div style={{ fontWeight: 600, color: 'var(--color-orange)', marginBottom: '8px', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '11px' }}>
-            Demo credentials
+          <div style={{ fontWeight: 600, color: 'var(--color-orange)', marginBottom: '6px', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '11px' }}>
+            No password needed
           </div>
-          {[
-            ['super_admin', 'admin@demo.com'],
-            ['editor',      'editor@demo.com'],
-            ['presenter',   'presenter@demo.com'],
-          ].map(([role, email]) => (
-            <div key={role} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ color: 'var(--color-text)', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{role}</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px' }}>{email}</span>
-            </div>
-          ))}
-          <div style={{ marginTop: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '8px' }}>
-            Password: <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text)', fontSize: '11px' }}>Demo1234!</span>
+          <div style={{ lineHeight: 1.6 }}>
+            Enter your email and we'll send you a magic link to sign in. No password required.
+          </div>
+          <div style={{ marginTop: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '8px', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+            Demo: admin@demo.com, editor@demo.com, presenter@demo.com
           </div>
         </div>
       </div>

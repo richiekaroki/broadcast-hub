@@ -23,11 +23,9 @@ export class UsersService {
     return user;
   }
 
-  // FIX 1: name is now persisted; unused RegisterDto import removed
   async create(dto: {
     email: string;
     name: string;
-    passwordHash?: string;
     role?: UserRole;
     googleId?: string;
   }): Promise<User> {
@@ -36,7 +34,6 @@ export class UsersService {
     const user = this.userRepo.create({
       email: dto.email,
       name: dto.name,
-      passwordHash: dto.passwordHash ?? '',
       role: dto.role ?? UserRole.VIEWER,
       googleId: dto.googleId,
     });

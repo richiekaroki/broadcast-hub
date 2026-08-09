@@ -3,10 +3,10 @@ import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import * as bcrypt from 'bcrypt';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { RefreshToken } from './refresh-token.entity';
+import { MagicLinkToken } from './magic-link-token.entity';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
 
@@ -15,9 +15,8 @@ const mockUser: User = {
   id:           'user-uuid-1',
   email:        'admin@demo.com',
   name:         'Admin User',
-  passwordHash: bcrypt.hashSync('Demo1234!', 10),
   role:         UserRole.SUPER_ADMIN,
-  googleId:     null,
+  googleId:     undefined,
   createdAt:    new Date(),
   updatedAt:    new Date(),
 };
@@ -39,12 +38,20 @@ const mockConfig = {
     const map: Record<string, string> = {
       JWT_SECRET:         'test-access-secret',
       JWT_REFRESH_SECRET: 'test-refresh-secret',
+      FRONTEND_URL:       'http://localhost:3000',
     };
     return map[key];
   }),
 };
 
 const mockRefreshRepo = {
+  find:   jest.fn().mockResolvedValue([]),
+  save:   jest.fn(),
+  create: jest.fn(dto => dto),
+  delete: jest.fn(),
+};
+
+const mockMagicLinkRepo = {
   find:   jest.fn().mockResolvedValue([]),
   save:   jest.fn(),
   create: jest.fn(dto => dto),
@@ -63,74 +70,103 @@ describe('AuthService', () => {
         { provide: JwtService,                             useValue: mockJwtService    },
         { provide: ConfigService,                          useValue: mockConfig        },
         { provide: getRepositoryToken(RefreshToken),       useValue: mockRefreshRepo   },
+        { provide: getRepositoryToken(MagicLinkToken),     useValue: mockMagicLinkRepo },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     jest.clearAllMocks();
 
-    // Default: no existing refresh tokens
+    // Default: no existing tokens
     mockRefreshRepo.find.mockResolvedValue([]);
+    mockMagicLinkRepo.find.mockResolvedValue([]);
     mockJwtService.signAsync.mockResolvedValue('signed-token');
   });
 
-  // ── register ─────────────────────────────────────────────────────────────────
-  describe('register()', () => {
-    it('creates a new user and returns token pair', async () => {
-      mockUsersService.findByEmail.mockResolvedValue(null);
-      mockUsersService.create.mockResolvedValue(mockUser);
-
-      const result = await service.register({
-        email: 'new@demo.com', password: 'Demo1234!', name: 'New User',
-      });
-
-      expect(mockUsersService.create).toHaveBeenCalledWith(
-        expect.objectContaining({ email: 'new@demo.com', name: 'New User' }),
-      );
-      expect(result).toHaveProperty('accessToken');
-      expect(result).toHaveProperty('refreshToken');
-    });
-
-    it('throws ConflictException when email already registered', async () => {
+  // ── requestMagicLink ────────────────────────────────────────────────────────
+  describe('requestMagicLink()', () => {
+    it('returns success message when email is registered', async () => {
       mockUsersService.findByEmail.mockResolvedValue(mockUser);
 
-      await expect(
-        service.register({ email: 'admin@demo.com', password: 'Demo1234!', name: 'Admin' }),
-      ).rejects.toThrow(ConflictException);
+      const result = await service.requestMagicLink('admin@demo.com');
 
-      expect(mockUsersService.create).not.toHaveBeenCalled();
+      expect(result).toHaveProperty('message');
+      expect(mockMagicLinkRepo.save).toHaveBeenCalled();
+      expect(mockMagicLinkRepo.create).toHaveBeenCalled();
+    });
+
+    it('returns same success message even when email not found (no enumeration)', async () => {
+      mockUsersService.findByEmail.mockResolvedValue(null);
+
+      const result = await service.requestMagicLink('unknown@example.com');
+
+      expect(result).toHaveProperty('message');
+      expect(mockMagicLinkRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('deletes old tokens for the same email before creating new one', async () => {
+      mockUsersService.findByEmail.mockResolvedValue(mockUser);
+
+      await service.requestMagicLink('admin@demo.com');
+
+      expect(mockMagicLinkRepo.delete).toHaveBeenCalled();
     });
   });
 
-  // ── login ─────────────────────────────────────────────────────────────────────
-  describe('login()', () => {
-    it('returns tokens for valid credentials', async () => {
-      mockUsersService.findByEmail.mockResolvedValue(mockUser);
+  // ── verifyMagicLink ─────────────────────────────────────────────────────────
+  describe('verifyMagicLink()', () => {
+    it('throws UnauthorizedException for invalid token', async () => {
+      mockMagicLinkRepo.find.mockResolvedValue([]);
 
-      const result = await service.login({ email: 'admin@demo.com', password: 'Demo1234!' });
+      await expect(service.verifyMagicLink('invalid-token')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws UnauthorizedException for expired token', async () => {
+      mockMagicLinkRepo.find.mockResolvedValue([{
+        id: 'token-1',
+        token: 'hashed-token',
+        userId: mockUser.id,
+        expiresAt: new Date(Date.now() - 1000 * 60 * 10), // 10 minutes ago
+        used: false,
+        createdAt: new Date(),
+      }]);
+
+      await expect(service.verifyMagicLink('some-token')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('throws UnauthorizedException for used token', async () => {
+      mockMagicLinkRepo.find.mockResolvedValue([{
+        id: 'token-1',
+        token: 'hashed-token',
+        userId: mockUser.id,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 10), // 10 minutes from now
+        used: true,
+        createdAt: new Date(),
+      }]);
+
+      await expect(service.verifyMagicLink('some-token')).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('returns tokens for valid token', async () => {
+      mockMagicLinkRepo.find.mockResolvedValue([{
+        id: 'token-1',
+        token: 'hashed-token',
+        userId: mockUser.id,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 10),
+        used: false,
+        createdAt: new Date(),
+      }]);
+      mockUsersService.findById.mockResolvedValue(mockUser);
+
+      const result = await service.verifyMagicLink('valid-token');
 
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('refreshToken');
-    });
-
-    it('throws UnauthorizedException for unknown email', async () => {
-      mockUsersService.findByEmail.mockResolvedValue(null);
-
-      await expect(
-        service.login({ email: 'nobody@demo.com', password: 'Demo1234!' }),
-      ).rejects.toThrow(UnauthorizedException);
-    });
-
-    it('throws UnauthorizedException for wrong password', async () => {
-      mockUsersService.findByEmail.mockResolvedValue(mockUser);
-
-      await expect(
-        service.login({ email: 'admin@demo.com', password: 'WrongPassword' }),
-      ).rejects.toThrow(UnauthorizedException);
+      expect(mockMagicLinkRepo.save).toHaveBeenCalled(); // marks token as used
     });
   });
 
-  // ── generateTokens ────────────────────────────────────────────────────────────
+  // ── generateTokens ──────────────────────────────────────────────────────────
   describe('generateTokens()', () => {
     it('signs access token with JWT_SECRET', async () => {
       await service.generateTokens(mockUser);
@@ -165,7 +201,7 @@ describe('AuthService', () => {
     });
   });
 
-  // ── refreshTokens ─────────────────────────────────────────────────────────────
+  // ── refreshTokens ───────────────────────────────────────────────────────────
   describe('refreshTokens()', () => {
     it('throws UnauthorizedException for invalid JWT signature', async () => {
       mockJwtService.verifyAsync.mockRejectedValue(new Error('jwt malformed'));
@@ -183,7 +219,7 @@ describe('AuthService', () => {
     });
   });
 
-  // ── logout ────────────────────────────────────────────────────────────────────
+  // ── logout ──────────────────────────────────────────────────────────────────
   describe('logout()', () => {
     it('silently succeeds when token not found (idempotent)', async () => {
       mockRefreshRepo.find.mockResolvedValue([]);

@@ -1,15 +1,15 @@
 import {
   Controller, Post, Body, Get, UseGuards,
-  Req, Res, HttpCode, HttpStatus,
+  Req, Res, HttpCode, HttpStatus, Query,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
+import { RequestMagicLinkDto } from './dto/request-magic-link.dto';
 import { RefreshDto } from './dto/refresh.dto';
-import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 
@@ -21,29 +21,31 @@ export class AuthController {
     private readonly config: ConfigService,
   ) {}
 
-  @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  register(@Body() dto: RegisterDto) {
-    return this.authService.register(dto);
-  }
-
-  @Post('login')
+  // ── Request magic link ─────────────────────────────────────────────────────
+  @Post('magic-link')
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 req/min per IP
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login and receive tokens' })
-  login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  @ApiOperation({ summary: 'Request a magic link (passwordless login)' })
+  requestMagicLink(@Body() dto: RequestMagicLinkDto) {
+    return this.authService.requestMagicLink(dto.email);
   }
 
-  // Google OAuth — redirects browser to Google consent screen
+  // ── Verify magic link ─────────────────────────────────────────────────────
+  @Get('magic-link/verify')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify magic link token and receive JWT pair' })
+  verifyMagicLink(@Query('token') token: string) {
+    return this.authService.verifyMagicLink(token);
+  }
+
+  // ── Google OAuth ───────────────────────────────────────────────────────────
   @Get('oauth/google')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Initiate Google OAuth flow' })
   googleAuth() {
-    // Passport handles the redirect — nothing returned
+    // Passport handles the redirect
   }
 
-  // Google OAuth callback — redirects to frontend with tokens in query params
-  // The frontend catches the params and stores them (see OAuthCallback.tsx)
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   @ApiOperation({ summary: 'Google OAuth callback' })
@@ -58,14 +60,13 @@ export class AuthController {
 
     const { accessToken, refreshToken } = await this.authService.generateTokens(user);
 
-    // Redirect to frontend OAuth callback page with tokens as query params
-    // The frontend page reads them, stores in localStorage, and redirects to /dashboard
     const frontendUrl = this.config.get<string>('FRONTEND_URL') || 'http://localhost:3000';
     return res.redirect(
-      `${frontendUrl}/auth/callback?accessToken=${accessToken}&refreshToken=${refreshToken}`,
+      `${frontendUrl}/auth/callback#accessToken=${accessToken}&refreshToken=${refreshToken}`,
     );
   }
 
+  // ── Refresh ────────────────────────────────────────────────────────────────
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token (rotates refresh token)' })
@@ -73,7 +74,7 @@ export class AuthController {
     return this.authService.refreshTokens(dto.refreshToken);
   }
 
-  // Logout — revokes the refresh token so it cannot be reused
+  // ── Logout ─────────────────────────────────────────────────────────────────
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
