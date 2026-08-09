@@ -44,12 +44,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: apps/api/package-lock.json
 
       - name: Install API dependencies
         working-directory: apps/api
-        run: npm ci
+        run: npm install
 
       - name: Build API
         working-directory: apps/api
@@ -65,7 +63,7 @@ jobs:
 
       - name: Install web dependencies
         working-directory: apps/web
-        run: npm ci
+        run: npm install
 
       - name: Build web
         working-directory: apps/web
