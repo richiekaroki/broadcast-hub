@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { InjectRedis } from '@nestjs-modules/ioredis';
-import { Redis } from 'ioredis';
 import { Content, ContentStatus } from './entities/content.entity';
 import { CreateContentDto } from './dto/create-content.dto';
+import { UpdateContentDto } from './dto/update-content.dto';
 import { UserRole } from '../users/enums/user-role.enum';
+import { MemoryCache } from '../common/cache';
 
+const cache = new MemoryCache();
 const CONTENT_LIST_KEY = 'content:list';
 const CONTENT_TTL = 300; // 5 minutes
 
@@ -16,12 +17,10 @@ export class ContentService {
 
   constructor(
     @InjectRepository(Content) private readonly repo: Repository<Content>,
-    @InjectRedis() private readonly redis: Redis,
   ) {}
 
   /*** CRUD ***/
 
-  // FIX 2: authorId set from the calling controller, not silently dropped
   async create(dto: CreateContentDto, authorId: string): Promise<Content> {
     const content = this.repo.create({
       ...dto,
@@ -29,7 +28,7 @@ export class ContentService {
       authorId,
     });
     const saved = await this.repo.save(content);
-    await this.invalidateCache();
+    this.invalidateCache();
     return saved;
   }
 
@@ -38,17 +37,16 @@ export class ContentService {
   }
 
   async findPublished(): Promise<Content[]> {
-    const cached = await this.redis.get(CONTENT_LIST_KEY);
-    if (cached) return JSON.parse(cached) as Content[];
+    const cached = cache.get<Content[]>(CONTENT_LIST_KEY);
+    if (cached) return cached;
 
     const published = await this.repo.find({
       where: { status: ContentStatus.PUBLISHED },
     });
-    await this.redis.setex(CONTENT_LIST_KEY, CONTENT_TTL, JSON.stringify(published));
+    cache.set(CONTENT_LIST_KEY, published, CONTENT_TTL);
     return published;
   }
 
-  // FIX 7: non-published content is hidden from viewers/presenters/advertisers
   async findOne(id: string, requesterRole?: UserRole): Promise<Content> {
     const content = await this.repo.findOne({ where: { id } });
     if (!content) throw new NotFoundException('Content not found');
@@ -61,19 +59,20 @@ export class ContentService {
     return content;
   }
 
-  async update(id: string, dto: Partial<CreateContentDto>): Promise<Content> {
+  async update(id: string, dto: UpdateContentDto): Promise<Content> {
     const content = await this.repo.findOne({ where: { id } });
     if (!content) throw new NotFoundException('Content not found');
-    Object.assign(content, dto);
+    if (dto.title !== undefined) content.title = dto.title;
+    if (dto.body !== undefined) content.body = dto.body;
     const saved = await this.repo.save(content);
-    await this.invalidateCache();
+    this.invalidateCache();
     return saved;
   }
 
   async remove(id: string): Promise<void> {
     const result = await this.repo.delete(id);
     if (result.affected === 0) throw new NotFoundException('Content not found');
-    await this.invalidateCache();
+    this.invalidateCache();
   }
 
   /*** Editorial workflow ***/
@@ -83,7 +82,7 @@ export class ContentService {
     if (!content) throw new NotFoundException('Content not found');
     content.status = ContentStatus.PENDING_REVIEW;
     const saved = await this.repo.save(content);
-    await this.invalidateCache();
+    this.invalidateCache();
     return saved;
   }
 
@@ -92,23 +91,22 @@ export class ContentService {
     if (!content) throw new NotFoundException('Content not found');
     content.status = ContentStatus.PUBLISHED;
     const saved = await this.repo.save(content);
-    await this.invalidateCache();
+    this.invalidateCache();
     return saved;
   }
 
-  // FIX 3: removed (content as any) cast — rejectionReason is on the entity
   async reject(id: string, reason: string): Promise<Content> {
     const content = await this.repo.findOne({ where: { id } });
     if (!content) throw new NotFoundException('Content not found');
     content.status = ContentStatus.REJECTED;
     content.rejectionReason = reason;
     const saved = await this.repo.save(content);
-    await this.invalidateCache();
+    this.invalidateCache();
     return saved;
   }
 
   /*** Cache helper ***/
-  private async invalidateCache(): Promise<void> {
-    await this.redis.del(CONTENT_LIST_KEY);
+  private invalidateCache(): void {
+    cache.del(CONTENT_LIST_KEY);
   }
 }

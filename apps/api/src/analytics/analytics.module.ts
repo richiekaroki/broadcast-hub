@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AnalyticsService } from './analytics.service';
-import { AnalyticsEvent, AnalyticsSchema } from './analytics.schema';
+import { AnalyticsEvent } from './analytics-event.entity';
+
 @Module({
-  imports: [MongooseModule.forFeature([{ name: AnalyticsEvent.name, schema: AnalyticsSchema }])],
+  imports: [TypeOrmModule.forFeature([AnalyticsEvent])],
   providers: [AnalyticsService],
   exports: [AnalyticsService],
 })

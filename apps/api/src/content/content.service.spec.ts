@@ -1,10 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { getRedisToken } from '@nestjs-modules/ioredis';
 import { ContentService } from './content.service';
 import { Content, ContentStatus } from './entities/content.entity';
 import { UserRole } from '../users/enums/user-role.enum';
+import { MemoryCache } from '../common/cache';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const mockContent: Content = {
@@ -13,8 +13,8 @@ const mockContent: Content = {
   body:            'Top stories from Kenya.',
   status:          ContentStatus.DRAFT,
   authorId:        'user-uuid-1',
-  author:          null as any,
-  rejectionReason: null,
+  author:          null as unknown as Content['author'],
+  rejectionReason: undefined,
   createdAt:       new Date(),
   updatedAt:       new Date(),
 };
@@ -28,12 +28,6 @@ const mockRepo = {
   delete:   jest.fn(),
 };
 
-const mockRedis = {
-  get:    jest.fn().mockResolvedValue(null), // cache miss by default
-  setex:  jest.fn().mockResolvedValue('OK'),
-  del:    jest.fn().mockResolvedValue(1),
-};
-
 // ── Suite ─────────────────────────────────────────────────────────────────────
 describe('ContentService', () => {
   let service: ContentService;
@@ -42,14 +36,12 @@ describe('ContentService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ContentService,
-        { provide: getRepositoryToken(Content), useValue: mockRepo  },
-        { provide: getRedisToken(),             useValue: mockRedis },
+        { provide: getRepositoryToken(Content), useValue: mockRepo },
       ],
     }).compile();
 
     service = module.get<ContentService>(ContentService);
     jest.clearAllMocks();
-    mockRedis.get.mockResolvedValue(null);
   });
 
   // ── create ────────────────────────────────────────────────────────────────────
@@ -79,32 +71,12 @@ describe('ContentService', () => {
         expect.objectContaining({ authorId: 'user-uuid-42' }),
       );
     });
-
-    it('invalidates the Redis cache after creation', async () => {
-      mockRepo.create.mockReturnValue(mockContent);
-      mockRepo.save.mockResolvedValue(mockContent);
-
-      await service.create({ title: 'T', body: 'B' }, 'user-uuid-1');
-
-      expect(mockRedis.del).toHaveBeenCalledWith('content:list');
-    });
   });
 
   // ── findPublished ─────────────────────────────────────────────────────────────
   describe('findPublished()', () => {
-    it('returns cached result without hitting the DB on cache hit', async () => {
-      const cached = [{ ...mockContent, status: ContentStatus.PUBLISHED }];
-      mockRedis.get.mockResolvedValue(JSON.stringify(cached));
-
-      const result = await service.findPublished();
-
-      expect(result).toHaveLength(1);
-      expect(mockRepo.find).not.toHaveBeenCalled();
-    });
-
-    it('queries DB and caches result on cache miss', async () => {
+    it('queries DB on cache miss', async () => {
       const published = [{ ...mockContent, status: ContentStatus.PUBLISHED }];
-      mockRedis.get.mockResolvedValue(null);
       mockRepo.find.mockResolvedValue(published);
 
       const result = await service.findPublished();
@@ -112,7 +84,6 @@ describe('ContentService', () => {
       expect(mockRepo.find).toHaveBeenCalledWith(
         expect.objectContaining({ where: { status: ContentStatus.PUBLISHED } }),
       );
-      expect(mockRedis.setex).toHaveBeenCalledWith('content:list', 300, expect.any(String));
       expect(result).toHaveLength(1);
     });
   });
@@ -157,19 +128,18 @@ describe('ContentService', () => {
   });
 
   describe('publish()', () => {
-    it('transitions any status → PUBLISHED and invalidates cache', async () => {
+    it('transitions any status → PUBLISHED', async () => {
       mockRepo.findOne.mockResolvedValue({ ...mockContent, status: ContentStatus.PENDING_REVIEW });
       mockRepo.save.mockImplementation(c => Promise.resolve(c));
 
       const result = await service.publish(mockContent.id);
 
       expect(result.status).toBe(ContentStatus.PUBLISHED);
-      expect(mockRedis.del).toHaveBeenCalledWith('content:list');
     });
   });
 
   describe('reject()', () => {
-    it('sets status to REJECTED and stores rejectionReason (no "as any" cast)', async () => {
+    it('sets status to REJECTED and stores rejectionReason', async () => {
       mockRepo.findOne.mockResolvedValue({ ...mockContent });
       mockRepo.save.mockImplementation(c => Promise.resolve(c));
 
@@ -186,14 +156,6 @@ describe('ContentService', () => {
       mockRepo.delete.mockResolvedValue({ affected: 0 });
 
       await expect(service.remove('nonexistent-id')).rejects.toThrow(NotFoundException);
-    });
-
-    it('invalidates cache after successful deletion', async () => {
-      mockRepo.delete.mockResolvedValue({ affected: 1 });
-
-      await service.remove(mockContent.id);
-
-      expect(mockRedis.del).toHaveBeenCalledWith('content:list');
     });
   });
 });

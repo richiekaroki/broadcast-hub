@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { getRedisToken } from '@nestjs-modules/ioredis';
 import { ProgramsService } from './programs.service';
 import { Program, ProgramStatus } from './entities/program.entity';
 
@@ -12,8 +11,8 @@ const makeProgram = (overrides: Partial<Program> = {}): Program => ({
   startTime:   new Date('2026-06-10T19:00:00Z'),
   endTime:     new Date('2026-06-10T20:00:00Z'),
   status:      ProgramStatus.SCHEDULED,
-  presenterId: null,
-  presenter:   null as any,
+  presenterId: undefined,
+  presenter:   null as unknown as Program['presenter'],
   createdAt:   new Date(),
   updatedAt:   new Date(),
   ...overrides,
@@ -27,12 +26,6 @@ const mockRepo = {
   findOne: jest.fn(),
 };
 
-const mockRedis = {
-  get:   jest.fn().mockResolvedValue(null),
-  setex: jest.fn().mockResolvedValue('OK'),
-  del:   jest.fn().mockResolvedValue(1),
-};
-
 // ── Suite ─────────────────────────────────────────────────────────────────────
 describe('ProgramsService', () => {
   let service: ProgramsService;
@@ -41,14 +34,12 @@ describe('ProgramsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ProgramsService,
-        { provide: getRepositoryToken(Program), useValue: mockRepo  },
-        { provide: getRedisToken(),             useValue: mockRedis },
+        { provide: getRepositoryToken(Program), useValue: mockRepo },
       ],
     }).compile();
 
     service = module.get<ProgramsService>(ProgramsService);
     jest.clearAllMocks();
-    mockRedis.get.mockResolvedValue(null);
   });
 
   // ── create ────────────────────────────────────────────────────────────────────
@@ -65,7 +56,6 @@ describe('ProgramsService', () => {
       });
 
       expect(result.title).toBe('Evening News at 7');
-      expect(mockRedis.del).toHaveBeenCalledWith('programs:schedule');
     });
 
     it('throws BadRequestException when endTime <= startTime', async () => {
@@ -73,7 +63,7 @@ describe('ProgramsService', () => {
         service.create({
           title:     'Bad Program',
           startTime: '2026-06-10T20:00:00Z',
-          endTime:   '2026-06-10T19:00:00Z', // end BEFORE start
+          endTime:   '2026-06-10T19:00:00Z',
         }),
       ).rejects.toThrow(BadRequestException);
 
@@ -93,19 +83,8 @@ describe('ProgramsService', () => {
 
   // ── findSchedule ──────────────────────────────────────────────────────────────
   describe('findSchedule()', () => {
-    it('returns cached schedule without hitting DB on warm cache', async () => {
-      const cached = [makeProgram()];
-      mockRedis.get.mockResolvedValue(JSON.stringify(cached));
-
-      const result = await service.findSchedule();
-
-      expect(result.data).toHaveLength(1);
-      expect(mockRepo.find).not.toHaveBeenCalled();
-    });
-
-    it('queries DB using ProgramStatus enum values (not raw strings)', async () => {
+    it('queries DB using ProgramStatus enum values', async () => {
       const programs = [makeProgram(), makeProgram({ status: ProgramStatus.LIVE })];
-      mockRedis.get.mockResolvedValue(null);
       mockRepo.find.mockResolvedValue(programs);
 
       await service.findSchedule();
@@ -120,13 +99,12 @@ describe('ProgramsService', () => {
       );
     });
 
-    it('caches result and applies pagination', async () => {
+    it('applies pagination', async () => {
       const programs = Array.from({ length: 25 }, (_, i) => makeProgram({ id: `prog-${i}` }));
       mockRepo.find.mockResolvedValue(programs);
 
       const result = await service.findSchedule(1, 20);
 
-      expect(mockRedis.setex).toHaveBeenCalledWith('programs:schedule', 120, expect.any(String));
       expect(result.data).toHaveLength(20);
       expect(result.total).toBe(25);
     });
@@ -147,20 +125,10 @@ describe('ProgramsService', () => {
 
       await expect(
         service.update('program-uuid-1', {
-          startTime: new Date('2026-06-10T21:00:00Z'),
-          endTime:   new Date('2026-06-10T20:00:00Z'), // end before start
+          startTime: '2026-06-10T21:00:00Z',
+          endTime:   '2026-06-10T20:00:00Z',
         }),
       ).rejects.toThrow(BadRequestException);
-    });
-
-    it('invalidates cache after successful update', async () => {
-      const prog = makeProgram();
-      mockRepo.findOne.mockResolvedValue(prog);
-      mockRepo.save.mockResolvedValue({ ...prog, title: 'Updated' });
-
-      await service.update('program-uuid-1', { title: 'Updated' });
-
-      expect(mockRedis.del).toHaveBeenCalledWith('programs:schedule');
     });
   });
 

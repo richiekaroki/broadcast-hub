@@ -1,46 +1,26 @@
 /**
- * BroadcastHub — Database Seed Script  (v2 — fixes applied)
+ * BroadcastHub — Database Seed Script  (v3 — Postgres only)
  * -----------------------------------------------------------
  * Run:  npx ts-node -r tsconfig-paths/register src/seed.ts
- *   or: npm run seed   (add script to package.json shown below)
- *
- * package.json script to add:
- *   "seed": "ts-node -r tsconfig-paths/register src/seed.ts"
- *
- * FIX 11: table name corrected content (not contents)
- * FIX 12: seed SQL column list matches actual entity columns
- *         is_active removed (not on entity)
- *         name column added to users INSERT (Fix 1)
- *         author_id added to content INSERT (Fix 2)
- *         authorId branch logic fixed (Fix 5 — was editorUser.id on both branches)
+ *   or: npm run seed
  */
 
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { connect, model, Schema, disconnect } from 'mongoose';
-import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
 
 // ── TypeORM connection ────────────────────────────────────────────────────────
 const AppDataSource = new DataSource({
-  type: 'postgres',
-  url: process.env.DATABASE_URL || 'postgres://bh_user:bh_pass@localhost:5432/broadcasthub',
-  entities: [__dirname + '/**/*.entity{.ts,.js}'],
+  type:      'postgres',
+  url:       process.env.DATABASE_URL || 'postgres://bh_user:bh_pass@localhost:5432/broadcasthub',
+  ssl:       { rejectUnauthorized: false },
+  entities:  [__dirname + '/**/*.entity{.ts,.js}'],
   synchronize: true,
 });
 
-// ── Inline Mongoose model (no NestJS DI needed in seed) ──────────────────────
-const AnalyticsSchema = new Schema(
-  { entityType: String, entityId: String, userId: String, action: String, meta: Object },
-  { timestamps: true, collection: 'analytics_events' },
-);
-const AnalyticsEvent = model('AnalyticsEvent', AnalyticsSchema);
-
 // ── Seed data ─────────────────────────────────────────────────────────────────
-const DEMO_PASSWORD = 'Demo1234!';
-
 const USERS = [
   { name: 'Admin User',      email: 'admin@demo.com',      role: 'super_admin' },
   { name: 'Jane Editor',     email: 'editor@demo.com',     role: 'editor'      },
@@ -73,34 +53,24 @@ async function seed() {
   console.log('🌱  BroadcastHub seed starting…\n');
 
   await AppDataSource.initialize();
-  console.log('✅  PostgreSQL connected');
-
-  await connect(process.env.MONGODB_URL || 'mongodb://localhost:27017/broadcasthub');
-  console.log('✅  MongoDB connected');
+  console.log('✅  PostgreSQL connected (Neon)\n');
 
   const qr = AppDataSource.createQueryRunner();
   await qr.connect();
 
   try {
-    // FIX 11: correct table name is `content`, not `contents`
-    // CASCADE handles the content FK referencing users
-    await qr.query(`TRUNCATE TABLE content, users RESTART IDENTITY CASCADE`);
-    await AnalyticsEvent.deleteMany({});
+    await qr.query(`TRUNCATE TABLE analytics_events, content, users, refresh_tokens, magic_link_tokens RESTART IDENTITY CASCADE`);
     console.log('🗑️   Cleared existing seed data\n');
 
     // ── Users ──────────────────────────────────────────────────────────────
-    const hash = await bcrypt.hash(DEMO_PASSWORD, 12);
     const createdUsers: Array<{ id: string; role: string }> = [];
 
     for (const u of USERS) {
-      // FIX 12: column list matches user.entity.ts
-      //   ✅ name added     (Fix 1)
-      //   ❌ is_active removed  (never on entity)
       const [user] = await qr.query(
-        `INSERT INTO users ("id", "name", "email", "password_hash", "role", "createdAt", "updatedAt")
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW(), NOW())
+        `INSERT INTO users ("id", "name", "email", "role", "createdAt", "updatedAt")
+         VALUES (gen_random_uuid(), $1, $2, $3, NOW(), NOW())
          RETURNING id, role`,
-        [u.name, u.email, hash, u.role],
+        [u.name, u.email, u.role],
       );
       createdUsers.push(user);
       console.log(`👤  ${u.email}  (${u.role})`);
@@ -115,13 +85,8 @@ async function seed() {
     const createdContent: Array<{ id: string }> = [];
 
     for (const c of CONTENT_ITEMS) {
-      // FIX 5: branch logic was editorUser.id on BOTH branches — now correct
-      // Published content was authored by the admin; drafts by the editor
       const authorId = c.status === 'draft' ? editorUser.id : adminUser.id;
 
-      // FIX 12: column list matches content.entity.ts
-      //   ✅ author_id added   (Fix 2)
-      //   ❌ contents → content  (Fix 11)
       const [row] = await qr.query(
         `INSERT INTO content ("id", "title", "body", "status", "author_id", "createdAt", "updatedAt")
          VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW() - INTERVAL '${randomInt(1, 10)} days', NOW())
@@ -132,37 +97,41 @@ async function seed() {
       console.log(`📄  "${c.title}"  [${c.status}]`);
     }
 
-    // ── Analytics events (MongoDB) ────────────────────────────────────────
+    // ── Analytics events (Postgres) ────────────────────────────────────────
     console.log('\n📊  Seeding analytics events…');
     const publishedContent = createdContent.slice(0, 4);
-    const events: any[] = [];
+    let eventCount = 0;
 
     for (const c of publishedContent) {
-      for (let i = 0; i < randomInt(40, 120); i++) {
-        events.push({
-          entityType: 'content', entityId: c.id,
-          userId: randomInt(0, 1) === 0 ? viewerUser.id : adminUser.id,
-          action: 'view', meta: { source: 'web' },
-          createdAt: daysAgo(randomInt(0, 6)),
-        });
+      const viewCount = randomInt(40, 120);
+      const clickCount = randomInt(5, 20);
+
+      for (let i = 0; i < viewCount; i++) {
+        const userId = randomInt(0, 1) === 0 ? viewerUser.id : adminUser.id;
+        await qr.query(
+          `INSERT INTO analytics_events ("id", "entityType", "entityId", "userId", "action", "meta", "createdAt")
+           VALUES (gen_random_uuid(), 'content', $1, $2, 'view', '{"source":"web"}', NOW() - INTERVAL '${randomInt(0, 6)} days')`,
+          [c.id, userId],
+        );
+        eventCount++;
       }
-      for (let i = 0; i < randomInt(5, 20); i++) {
-        events.push({
-          entityType: 'content', entityId: c.id,
-          userId: viewerUser.id,
-          action: 'click', meta: { target: 'read-more' },
-          createdAt: daysAgo(randomInt(0, 6)),
-        });
+
+      for (let i = 0; i < clickCount; i++) {
+        await qr.query(
+          `INSERT INTO analytics_events ("id", "entityType", "entityId", "userId", "action", "meta", "createdAt")
+           VALUES (gen_random_uuid(), 'content', $1, $2, 'click', '{"target":"read-more"}', NOW() - INTERVAL '${randomInt(0, 6)} days')`,
+          [c.id, viewerUser.id],
+        );
+        eventCount++;
       }
     }
 
-    await AnalyticsEvent.insertMany(events);
-    console.log(`✅  Inserted ${events.length} analytics events`);
+    console.log(`✅  Inserted ${eventCount} analytics events`);
 
     // ── Summary ───────────────────────────────────────────────────────────
     console.log('\n─────────────────────────────────────────');
     console.log('🎉  Seed complete!\n');
-    console.log('Demo credentials  (password: Demo1234!)');
+    console.log('Auth: Use magic link flow — POST /api/v1/auth/magic-link');
     console.log('─────────────────────────────────────────');
     for (const u of USERS) {
       console.log(`  ${u.role.padEnd(14)}  ${u.email}`);
@@ -170,7 +139,7 @@ async function seed() {
     console.log('─────────────────────────────────────────');
     console.log(`\n  Users:    ${USERS.length}`);
     console.log(`  Content:  ${CONTENT_ITEMS.length}`);
-    console.log(`  Events:   ${events.length}`);
+    console.log(`  Events:   ${eventCount}`);
     console.log('\n🚀  Start the API and visit http://localhost:4000/api/docs\n');
 
   } catch (err) {
@@ -179,7 +148,6 @@ async function seed() {
   } finally {
     await qr.release();
     await AppDataSource.destroy();
-    await disconnect();
   }
 }
 
