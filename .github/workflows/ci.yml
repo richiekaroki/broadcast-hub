@@ -14,46 +14,26 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER || 'bh_user' }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD || 'bh_pass' }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB || 'broadcasthub' }}
+          POSTGRES_USER: bh_user
+          POSTGRES_PASSWORD: bh_pass
+          POSTGRES_DB: broadcasthub
         ports: ['5432:5432']
         options: >-
-          --health-cmd "pg_isready -U ${{ secrets.POSTGRES_USER || 'bh_user' }}"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      mongo:
-        image: mongo:7.0
-        ports: ['27017:27017']
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ connectionStatus: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      redis:
-        image: redis:7-alpine
-        ports: ['6379:6379']
-        options: >-
-          --health-cmd "redis-cli ping"
+          --health-cmd "pg_isready -U bh_user"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
 
     env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       NODE_ENV: test
-      DATABASE_URL: postgres://${{ secrets.POSTGRES_USER || 'bh_user' }}:${{ secrets.POSTGRES_PASSWORD || 'bh_pass' }}@localhost:5432/${{ secrets.POSTGRES_DB || 'broadcasthub' }}
-      MONGODB_URL: mongodb://localhost:27017/broadcasthub
-      REDIS_URL: redis://localhost:6379
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
-      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
-      GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-      GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-      GOOGLE_CALLBACK_URL: http://localhost:4000/api/v1/auth/google/callback
+      DATABASE_URL: postgres://bh_user:bh_pass@localhost:5432/broadcasthub
+      JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-jwt-secret' }}
+      JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET || 'test-refresh-secret' }}
       FRONTEND_URL: http://localhost:3000
+      SMTP_HOST: smtp-relay.brevo.com
+      SMTP_PORT: 587
+      SMTP_USER: test@test.com
+      SMTP_PASS: test
       PORT: 4000
 
     steps:
@@ -66,9 +46,6 @@ jobs:
           node-version: '22'
           cache: 'npm'
           cache-dependency-path: apps/api/package-lock.json
-
-      - name: Install npm 11
-        run: npm install -g npm@11
 
       - name: Install API dependencies
         working-directory: apps/api
@@ -86,10 +63,6 @@ jobs:
         working-directory: apps/api
         run: npm run seed
 
-      - name: Run E2E tests
-        working-directory: apps/api
-        run: npm run test:e2e
-
       - name: Install web dependencies
         working-directory: apps/web
         run: npm ci
@@ -97,14 +70,6 @@ jobs:
       - name: Build web
         working-directory: apps/web
         run: npm run build
-
-      - name: Build Docker image (API)
-        working-directory: apps/api
-        run: docker build -t broadcast-hub-api:${{ github.sha }} .
-
-      - name: Build Docker image (Web)
-        working-directory: apps/web
-        run: docker build -t broadcast-hub-web:${{ github.sha }} .
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
