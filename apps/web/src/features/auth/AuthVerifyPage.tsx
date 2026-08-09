@@ -20,7 +20,7 @@ export function AuthVerifyPage() {
     verifyMagicLink(token)
       .then(() => {
         dispatch(setAuthenticated(true));
-        dispatch(setUser({ name: 'User', role: 'viewer' }));
+        dispatch(setUser({ name: 'User', role: 'viewer', email: '' }));
         navigate('/', { replace: true });
       })
       .catch((err: any) => {

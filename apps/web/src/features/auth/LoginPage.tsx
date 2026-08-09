@@ -1,16 +1,7 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAppDispatch } from '../../store/hooks';
-import { setAuthenticated, setUser } from '../../store/authSlice';
 import { requestMagicLink } from '../../api/client';
 
-interface LoginPageProps {
-  onLogin?: () => void;
-}
-
-export function LoginPage({ onLogin }: LoginPageProps) {
-  const dispatch  = useAppDispatch();
-  const navigate  = useNavigate();
+export function LoginPage() {
   const [email,   setEmail]   = useState('');
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);

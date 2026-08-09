@@ -2,8 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import { useAppSelector, useAppDispatch } from './store/hooks';
-import { setAuthenticated } from './store/authSlice';
+import { useAppSelector } from './store/hooks';
 import { Toaster } from './components/Toast';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -26,7 +25,6 @@ const queryClient = new QueryClient({
     queries: {
       staleTime:  30_000,
       retry:      1,
-      // Show stale data while revalidating — prevents full loading screens on nav
       refetchOnWindowFocus: true,
     },
   },
@@ -38,15 +36,12 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const dispatch    = useAppDispatch();
-  const handleLogin = () => dispatch(setAuthenticated(true));
-
   return (
     <BrowserRouter>
       <Routes>
         {/* Public */}
         <Route path="/"             element={<LandingPage />} />
-        <Route path="/login"        element={<LoginPage onLogin={handleLogin} />} />
+        <Route path="/login"        element={<LoginPage />} />
         <Route path="/auth/callback" element={<OAuthCallback />} />
         <Route path="/auth/verify"   element={<AuthVerifyPage />} />
 
