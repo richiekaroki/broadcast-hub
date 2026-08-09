@@ -46,18 +46,20 @@ const mockConfig = {
 };
 
 const mockRefreshRepo = {
-  find:   jest.fn().mockResolvedValue([]),
-  save:   jest.fn(),
-  create: jest.fn(dto => dto),
-  delete: jest.fn(),
+  find:    jest.fn().mockResolvedValue([]),
+  findOne: jest.fn().mockResolvedValue(null),
+  save:    jest.fn(),
+  create:  jest.fn(dto => dto),
+  delete:  jest.fn(),
 };
 
 const mockMagicLinkRepo = {
-  find:   jest.fn().mockResolvedValue([]),
-  save:   jest.fn(),
-  create: jest.fn(dto => dto),
-  delete: jest.fn(),
-  update: jest.fn(),
+  find:    jest.fn().mockResolvedValue([]),
+  findOne: jest.fn().mockResolvedValue(null),
+  save:    jest.fn(),
+  create:  jest.fn(dto => dto),
+  delete:  jest.fn(),
+  update:  jest.fn(),
 };
 
 const mockEmailService = {
@@ -86,7 +88,9 @@ describe('AuthService', () => {
 
     // Default: no existing tokens
     mockRefreshRepo.find.mockResolvedValue([]);
+    mockRefreshRepo.findOne.mockResolvedValue(null);
     mockMagicLinkRepo.find.mockResolvedValue([]);
+    mockMagicLinkRepo.findOne.mockResolvedValue(null);
     mockJwtService.signAsync.mockResolvedValue('signed-token');
   });
 
@@ -116,7 +120,7 @@ describe('AuthService', () => {
 
       await service.requestMagicLink('admin@demo.com');
 
-      expect(mockMagicLinkRepo.delete).toHaveBeenCalled();
+      expect(mockMagicLinkRepo.update).toHaveBeenCalled();
     });
   });
 
