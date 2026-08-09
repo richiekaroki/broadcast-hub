@@ -8,22 +8,16 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   private readonly logger = new Logger(GoogleStrategy.name);
 
   constructor(cfg: ConfigService) {
-    const clientID = cfg.get<string>('GOOGLE_CLIENT_ID');
-    const clientSecret = cfg.get<string>('GOOGLE_CLIENT_SECRET');
-
-    if (!clientID || !clientSecret) {
-      // Skip Google OAuth — strategy won't be registered
-      super({ clientID: 'disabled', clientSecret: 'disabled', callbackURL: 'http://localhost' });
-      this.logger.warn('Google OAuth disabled — GOOGLE_CLIENT_ID/SECRET not set');
-      return;
-    }
-
     super({
-      clientID,
-      clientSecret,
-      callbackURL: cfg.get<string>('GOOGLE_CALLBACK_URL') || 'http://localhost:4000/api/v1/auth/google/callback',
-      scope: ['email', 'profile'],
+      clientID:     cfg.get<string>('GOOGLE_CLIENT_ID') || 'disabled',
+      clientSecret: cfg.get<string>('GOOGLE_CLIENT_SECRET') || 'disabled',
+      callbackURL:  cfg.get<string>('GOOGLE_CALLBACK_URL') || 'http://localhost:4000/api/v1/auth/google/callback',
+      scope:        ['email', 'profile'],
     });
+
+    if (!cfg.get<string>('GOOGLE_CLIENT_ID')) {
+      this.logger.warn('Google OAuth disabled — GOOGLE_CLIENT_ID/SECRET not set');
+    }
   }
 
   async validate(_at: string, _rt: string, profile: Profile) {
