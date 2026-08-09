@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ProgramsService } from './programs.service';
+import { cache } from './programs.service';
 import { Program, ProgramStatus } from './entities/program.entity';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
@@ -40,6 +41,7 @@ describe('ProgramsService', () => {
 
     service = module.get<ProgramsService>(ProgramsService);
     jest.clearAllMocks();
+    cache.clear();
   });
 
   // ── create ────────────────────────────────────────────────────────────────────

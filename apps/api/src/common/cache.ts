@@ -26,4 +26,8 @@ export class MemoryCache {
   del(key: string): void {
     this.store.delete(key);
   }
+
+  clear(): void {
+    this.store.clear();
+  }
 }

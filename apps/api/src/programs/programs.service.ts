@@ -6,7 +6,7 @@ import { CreateProgramDto } from './dto/create-program.dto';
 import { UpdateProgramDto } from './dto/update-program.dto';
 import { MemoryCache } from '../common/cache';
 
-const cache = new MemoryCache();
+export const cache = new MemoryCache();
 const SCHEDULE_KEY = 'programs:schedule';
 const SCHEDULE_TTL = 120; // 2 minutes
 

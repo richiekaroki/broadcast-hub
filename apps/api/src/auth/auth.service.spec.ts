@@ -9,6 +9,7 @@ import { RefreshToken } from './refresh-token.entity';
 import { MagicLinkToken } from './magic-link-token.entity';
 import { User } from '../users/entities/user.entity';
 import { UserRole } from '../users/enums/user-role.enum';
+import { EmailService } from '../email/email.service';
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 const mockUser: User = {
@@ -56,6 +57,11 @@ const mockMagicLinkRepo = {
   save:   jest.fn(),
   create: jest.fn(dto => dto),
   delete: jest.fn(),
+  update: jest.fn(),
+};
+
+const mockEmailService = {
+  sendMagicLink: jest.fn().mockResolvedValue(undefined),
 };
 
 // ── Suite ─────────────────────────────────────────────────────────────────────
@@ -69,6 +75,7 @@ describe('AuthService', () => {
         { provide: UsersService,                           useValue: mockUsersService  },
         { provide: JwtService,                             useValue: mockJwtService    },
         { provide: ConfigService,                          useValue: mockConfig        },
+        { provide: EmailService,                           useValue: mockEmailService  },
         { provide: getRepositoryToken(RefreshToken),       useValue: mockRefreshRepo   },
         { provide: getRepositoryToken(MagicLinkToken),     useValue: mockMagicLinkRepo },
       ],
