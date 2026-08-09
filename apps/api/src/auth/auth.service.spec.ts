@@ -159,21 +159,21 @@ describe('AuthService', () => {
     });
 
     it('returns tokens for valid token', async () => {
-      mockMagicLinkRepo.find.mockResolvedValue([{
+      mockMagicLinkRepo.findOne.mockResolvedValue({
         id: 'token-1',
         token: 'hashed-token',
         userId: mockUser.id,
         expiresAt: new Date(Date.now() + 1000 * 60 * 10),
         used: false,
         createdAt: new Date(),
-      }]);
+      });
       mockUsersService.findById.mockResolvedValue(mockUser);
 
       const result = await service.verifyMagicLink('valid-token');
 
       expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('refreshToken');
-      expect(mockMagicLinkRepo.save).toHaveBeenCalled(); // marks token as used
+      expect(mockMagicLinkRepo.save).toHaveBeenCalled();
     });
   });
 
