@@ -1,33 +1,9 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { fetchPrograms } from '../../api';
 import type { Program } from '../../api';
 import { ReactNode } from 'react';
-
-// ── Animated counter hook ─────────────────────────────────────────────────────
-function useAnimatedValue(target: number, duration = 800) {
-  const [display, setDisplay] = useState(target);
-  const raf = useRef<number>(0);
-  const start = useRef(display);
-  const startTime = useRef(0);
-
-  useEffect(() => {
-    start.current = display;
-    startTime.current = performance.now();
-    const tick = (now: number) => {
-      const elapsed = now - startTime.current;
-      const progress = Math.min(elapsed / duration, 1);
-      const ease = 1 - Math.pow(1 - progress, 3);
-      setDisplay(Math.round(start.current + (target - start.current) * ease));
-      if (progress < 1) raf.current = requestAnimationFrame(tick);
-    };
-    raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
-  }, [target, duration]);
-
-  return display;
-}
 
 // ── Fluctuating number hook ───────────────────────────────────────────────────
 function useFluctuate(base: number, range: number, intervalMs = 3000) {
@@ -395,15 +371,14 @@ export function LiveFeedPage() {
         state:    idx === 2 ? 'live-violation' : 'live',
         viewers:  idx === 0 ? 4800 : 1200,
         channel:  idx === 0 ? '@NexusGaming' : '@FerrisCode',
-        duration: idx === 0 ? '02:44:12' : '01:12:05',
-        index:    idx,
-      });
+      duration: idx === 0 ? '02:44:12' : '01:12:05',
+    });
     }
 
     return mapped;
   }, [livePrograms]);
 
-  const totalViewers = useFluctulate(14200, 300, 3000);
+  const totalViewers = useFluctuate(14200, 300, 3000);
   const alertCount = useFluctuate(3, 1, 5000);
 
   return (

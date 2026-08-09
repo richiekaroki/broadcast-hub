@@ -14,7 +14,7 @@ function decodeToken(t: string | null): Partial<AuthState> {
   try {
     const p = JSON.parse(atob(t.split('.')[1]));
     const email = p.email ?? '';
-    const name = email ? email.split('@')[0].replace(/\./g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'User';
+    const name = email ? email.split('@')[0].replace(/\./g, ' ').replace(/\b\w/g, (c: string) => c.toUpperCase()) : 'User';
     return { userEmail: email, userRole: p.role ?? 'viewer', userName: name };
   } catch { return {}; }
 }
