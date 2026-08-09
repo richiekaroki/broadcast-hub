@@ -1,18 +1,41 @@
-# BroadcastHub — Media & Broadcast Content Management Platform
+<div align="center">
 
-A production-grade fullstack monorepo — **NestJS v11** backend + **React 18 + Vite** frontend.
-Built as a portfolio project demonstrating real-world architecture for high-velocity media infrastructure.
+# BroadcastHub
 
-## 🔗 Live Links
+**Media & Broadcast Content Management Platform**
 
-| | URL |
-| --- | --- |
-| **Frontend** | <https://broadcast-hub-web.vercel.app> |
-| **Backend API** | <https://broadcast-hub-api.onrender.com> |
-| **Swagger Docs** | <https://broadcast-hub-api.onrender.com/api/docs> |
-| **GitHub** | <https://github.com/richiekaroki/broadcast-hub> |
+Fullstack monorepo — NestJS v11 + React 18 + Vite
 
-> **Note:** Replace these URLs with your actual deployment URLs after deploying to Vercel + Render.
+[![CI](https://github.com/richiekaroki/broadcast-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/richiekaroki/broadcast-hub/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+</div>
+
+---
+
+## Live
+
+| Service | URL |
+|---------|-----|
+| **Frontend** | [broadcast-hub-web.vercel.app](https://broadcast-hub-web.vercel.app) |
+| **API** | [wam-broadcast-hub.onrender.com](https://wam-broadcast-hub.onrender.com) |
+| **Swagger** | [wam-broadcast-hub.onrender.com/api/docs](https://wam-broadcast-hub.onrender.com/api/docs) |
+
+---
+
+## What it does
+
+A content management platform for broadcast media — radio stations, TV networks, digital publishers. Handles the full editorial lifecycle from draft to publication, with role-based access control and real-time analytics.
+
+**Key features:**
+
+- Passwordless auth (magic link email + Google OAuth)
+- 5-role RBAC — Super Admin, Editor, Presenter, Advertiser, Viewer
+- Editorial workflow — draft → review → publish/reject
+- Broadcast schedule management
+- Analytics dashboard (views, clicks)
+- In-memory caching for hot paths
+- Full Swagger/OpenAPI documentation
 
 ---
 
@@ -21,75 +44,79 @@ Built as a portfolio project demonstrating real-world architecture for high-velo
 ```
 broadcast-hub/
 ├── apps/
-│   ├── api/          ← NestJS v11 backend  (port 4000)
-│   └── web/          ← React 18 + Vite frontend (port 3000)
-├── .github/workflows/ci.yml
-├── docker-compose.yml
+│   ├── api/                  NestJS v11 backend
+│   │   ├── src/
+│   │   │   ├── auth/         Magic link + OAuth + JWT
+│   │   │   ├── content/      CRUD + editorial workflow
+│   │   │   ├── programs/     Broadcast schedule
+│   │   │   ├── analytics/    View/click tracking
+│   │   │   ├── dashboard/    Aggregated stats
+│   │   │   ├── email/        Brevo SMTP integration
+│   │   │   └── health/       Health checks
+│   │   └── ...
+│   └── web/                  React 18 + Vite frontend
+│       └── src/
+│           ├── features/     Page components
+│           ├── components/   Shared UI
+│           ├── api/          API client
+│           └── store/        Redux state
+├── render.yaml               Render deployment config
+├── docker-compose.yml        Local dev stack
 └── .env.example
 ```
 
-**Databases:** PostgreSQL (TypeORM) · MongoDB (Mongoose) · Redis (ioredis)
-**Auth:** JWT dual-secret · Google OAuth2 · Refresh token rotation · Logout revocation
-**RBAC:** 5 roles — SUPER_ADMIN, EDITOR, PRESENTER, ADVERTISER, VIEWER
+**Infra:** PostgreSQL (Neon) · Brevo SMTP · Vercel (frontend) · Render (API)
 
 ---
 
-## Quick Start (Local)
+## Quick start
 
 ### Prerequisites
 
 - Node.js 20+
-- Docker Desktop (for Redis)
-- PostgreSQL 17 native
-- MongoDB 8 native
+- PostgreSQL (local or [Neon](https://neon.tech) free tier)
 
-### 1. Clone & configure
+### 1. Clone & install
 
 ```bash
 git clone https://github.com/richiekaroki/broadcast-hub.git
 cd broadcast-hub
 cp .env.example .env
-# Edit .env — add your JWT secrets and Google OAuth credentials
 ```
 
-### 2. Create PostgreSQL user + database
+Edit `.env` — add your Neon `DATABASE_URL` and Brevo SMTP credentials.
+
+### 2. Start database (local)
 
 ```bash
-psql -U postgres -c "CREATE USER bh_user WITH PASSWORD 'bh_pass';"
-psql -U postgres -c "CREATE DATABASE broadcasthub OWNER bh_user;"
-psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE broadcasthub TO bh_user;"
+docker compose up -d postgres
 ```
 
-### 3. Start Redis (Docker)
+Or use Neon — just update `DATABASE_URL` in `.env`.
 
-```bash
-docker compose up -d redis
-```
-
-### 4. Backend
+### 3. Seed demo data
 
 ```bash
 cd apps/api
 npm install
-npm run start:dev     # → http://localhost:4000
-```
-
-### 5. Seed demo data
-
-```bash
-# (from apps/api, after start:dev is running)
 npm run seed
 ```
 
-### 6. Frontend
+### 4. Start backend
 
 ```bash
-cd apps/web
+npm run start:dev     # → http://localhost:4000
+```
+
+### 5. Start frontend
+
+```bash
+cd ../web
 npm install
 npm run dev           # → http://localhost:3000
 ```
 
-### 7. Swagger API docs
+### 6. Swagger docs
 
 ```
 http://localhost:4000/api/docs
@@ -97,84 +124,63 @@ http://localhost:4000/api/docs
 
 ---
 
-## Root Convenience Scripts
+## Auth flow
 
-From the project root after running `npm install` in both apps:
+**Passwordless magic link:**
 
-```bash
-npm run api           # start NestJS backend
-npm run web           # start React frontend
-npm run seed          # populate demo data
-npm run test          # run unit tests
-npm run test:cov      # run tests with coverage report
-npm run test:e2e      # run E2E tests (needs all 3 DBs running)
-npm run docker:dev    # start Redis only via Docker
-npm run docker:all    # start all 5 services via Docker
-```
+1. Enter email at login
+2. Receive a magic link via email (Brevo SMTP)
+3. Click link → verified → JWT pair issued
+4. Refresh token rotates on every use
 
----
+**Demo accounts** — enter these emails at login:
 
-## Demo Credentials
-
-All accounts use password: **Demo1234!**
-
-| Role | Email | Access |
-| --- | --- | --- |
-| super_admin | <admin@demo.com> | Full access — publish, reject, manage |
-| editor | <editor@demo.com> | Create drafts, submit for review |
-| presenter | <presenter@demo.com> | Create & manage programs |
-| advertiser | <advertiser@demo.com> | Read-only |
-| viewer | <viewer@demo.com> | Published content only |
+| Role | Email |
+|------|-------|
+| Super Admin | `admin@demo.com` |
+| Editor | `editor@demo.com` |
+| Presenter | `presenter@demo.com` |
+| Advertiser | `advertiser@demo.com` |
+| Viewer | `viewer@demo.com` |
 
 ---
 
-## API Endpoints
+## API
 
-| Method | Path | Auth | Description |
-| --- | --- | --- | --- |
-| GET | /health | Public | Health check (DBs + memory) |
-| POST | /api/v1/auth/register | Public | Register new user |
-| POST | /api/v1/auth/login | Public | Login, receive token pair |
-| GET | /api/v1/auth/oauth/google | Public | Google OAuth redirect |
-| POST | /api/v1/auth/refresh | Public | Rotate refresh token |
-| POST | /api/v1/auth/logout | JWT | Revoke refresh token |
-| GET | /api/v1/content | JWT | List published content (Redis cached) |
-| POST | /api/v1/content | EDITOR+ | Create draft |
-| PATCH | /api/v1/content/:id | EDITOR+ | Update draft |
-| POST | /api/v1/content/:id/submit | EDITOR | Submit for review |
-| PATCH | /api/v1/content/:id/publish | SUPER_ADMIN | Publish |
-| PATCH | /api/v1/content/:id/reject | SUPER_ADMIN | Reject with reason |
-| DELETE | /api/v1/content/:id | SUPER_ADMIN | Delete |
-| GET | /api/v1/programs | JWT | Broadcast schedule (Redis cached, paginated) |
-| POST | /api/v1/programs | PRESENTER+ | Create schedule slot |
-| PATCH | /api/v1/programs/:id | PRESENTER+ | Update program |
-| PATCH | /api/v1/programs/:id/cancel | SUPER_ADMIN | Cancel program |
-| GET | /api/v1/dashboard | JWT | Aggregated stats (Redis cached) |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `GET` | `/health` | Public | Health check |
+| `POST` | `/api/v1/auth/magic-link` | Public | Request magic link |
+| `GET` | `/api/v1/auth/magic-link/verify` | Public | Verify magic link |
+| `GET` | `/api/v1/auth/oauth/google` | Public | Google OAuth |
+| `POST` | `/api/v1/auth/refresh` | Public | Refresh token |
+| `POST` | `/api/v1/auth/logout` | JWT | Revoke token |
+| `GET` | `/api/v1/content` | JWT | List content |
+| `POST` | `/api/v1/content` | Editor+ | Create draft |
+| `PATCH` | `/api/v1/content/:id` | Editor+ | Update draft |
+| `POST` | `/api/v1/content/:id/submit` | Editor | Submit for review |
+| `PATCH` | `/api/v1/content/:id/publish` | Admin | Publish |
+| `PATCH` | `/api/v1/content/:id/reject` | Admin | Reject |
+| `DELETE` | `/api/v1/content/:id` | Admin | Delete |
+| `GET` | `/api/v1/programs` | JWT | Broadcast schedule |
+| `POST` | `/api/v1/programs` | Presenter+ | Create program |
+| `PATCH` | `/api/v1/programs/:id` | Presenter+ | Update program |
+| `PATCH` | `/api/v1/programs/:id/cancel` | Admin | Cancel program |
+| `GET` | `/api/v1/dashboard` | JWT | Dashboard stats |
 
 ---
 
-## Deployment
+## Tech Stack
 
-### Frontend → Vercel
-
-```bash
-cd apps/web
-npm install -g vercel
-vercel
-# Set VITE_API_URL=https://your-backend.onrender.com in Vercel dashboard
-```
-
-### Backend → Render
-
-```bash
-# Connect your GitHub repo at render.com
-# Render will auto-detect render.yaml and provision:
-#   - Web service (NestJS API)
-#   - PostgreSQL database (free tier)
-#   - MongoDB database (free tier)
-#   - Redis database (free tier)
-# Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, FRONTEND_URL in Render dashboard
-```
+| Layer | Technology |
+|-------|-----------|
+| **Backend** | NestJS v11, TypeORM, Passport, Swagger/OpenAPI |
+| **Frontend** | React 18, Vite, Tailwind CSS v4, Redux Toolkit, TanStack Query |
+| **Database** | PostgreSQL (Neon) |
+| **Email** | Brevo SMTP (nodemailer) |
+| **Auth** | JWT (dual-secret), magic link, Google OAuth2 |
+| **Deploy** | Render (API), Vercel (frontend), GitHub Actions CI |
+| **Testing** | Jest, SuperTest, 80%+ coverage threshold |
 
 ---
 
@@ -182,26 +188,49 @@ vercel
 
 ```bash
 cd apps/api
-npm test              # unit tests — no DB needed, runs in seconds
-npm run test:cov      # coverage report → open coverage/lcov-report/index.html
-npm run test:e2e      # full E2E — requires docker compose up -d postgres mongo redis
+npm test              # unit tests
+npm run test:cov      # coverage report
 ```
 
 ---
 
-## Tech Stack
+## Deployment
 
-**Backend:** NestJS v11 · TypeORM · Mongoose · ioredis · Passport · bcrypt · Swagger/OpenAPI
-**Frontend:** React 18 · Vite · Tailwind CSS v4 · Redux Toolkit · TanStack Query · React Router v6
-**Databases:** PostgreSQL 17 · MongoDB 8 · Redis 7
-**DevOps:** Docker · Docker Compose · GitHub Actions CI/CD
-**Testing:** Jest · SuperTest · 80%+ coverage threshold
+### Frontend (Vercel)
+
+Connected to GitHub — auto-deploys on push to `main`.
+
+Set `VITE_API_URL` in Vercel dashboard to your Render API URL.
+
+### Backend (Render)
+
+1. Connect GitHub repo at [render.com](https://render.com)
+2. Create Web Service → Root: `apps/api`
+3. Build: `npm install && npm run build`
+4. Start: `node dist/main`
+5. Add env vars (see `.env.example`)
+
+### Database (Neon)
+
+1. Create free account at [neon.tech](https://neon.tech)
+2. Create project → copy connection string
+3. Set as `DATABASE_URL` in Render env vars
+4. Run `npm run seed` locally to populate demo data
 
 ---
 
 ## Author
 
-**Richard Karoki** — Full Stack Developer, Nairobi Kenya
-📧 <karokirichard522@gmail.com>
-🔗 linkedin.com/in/richard-karoki007
-🐙 github.com/richiekaroki
+**Richard Karoki** — Full Stack Developer, Nairobi, Kenya
+
+[![Email](https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail&logoColor=white)](mailto:karokirichard522@gmail.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://linkedin.com/in/richard-karoki007)
+[![GitHub](https://img.shields.io/badge/GitHub-181717?style=flat&logo=github&logoColor=white)](https://github.com/richiekaroki)
+
+---
+
+<div align="center">
+
+Built with care in Nairobi, Kenya 🇰🇪
+
+</div>
