@@ -12,10 +12,13 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 // ── TypeORM connection ────────────────────────────────────────────────────────
+const dbUrl = process.env.DATABASE_URL || 'postgres://bh_user:bh_pass@localhost:5432/broadcasthub';
+const isRemote = dbUrl.includes('neon.tech') || dbUrl.includes('sslmode');
+
 const AppDataSource = new DataSource({
   type:      'postgres',
-  url:       process.env.DATABASE_URL || 'postgres://bh_user:bh_pass@localhost:5432/broadcasthub',
-  ssl:       { rejectUnauthorized: false },
+  url:       dbUrl,
+  ssl:       isRemote ? { rejectUnauthorized: false } : false,
   entities:  [__dirname + '/**/*.entity{.ts,.js}'],
   synchronize: true,
 });
