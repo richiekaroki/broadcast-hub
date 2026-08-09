@@ -23,7 +23,7 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('BroadcastHub API')
+    .setTitle('Wam Broadcast Hub API')
     .setDescription('Media & broadcasting management platform')
     .setVersion('1.0')
     .addBearerAuth()

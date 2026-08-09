@@ -28,8 +28,8 @@ function BigStat({ label, value, sub, color }: { label: string; value: string; s
 }
 
 export function StatsPage() {
-  const { data: stats, isLoading: sl } = useQuery({ queryKey: ['dashboard-stats'], queryFn: fetchDashboardStats });
-  const { data: content = [] }         = useQuery({ queryKey: ['content'],          queryFn: fetchContent       });
+  const { data: stats, isLoading: sl, isError: statsError, error: statsErr } = useQuery({ queryKey: ['dashboard-stats'], queryFn: fetchDashboardStats });
+  const { data: content = [], isError: contentError, error: contentErr }         = useQuery({ queryKey: ['content'],          queryFn: fetchContent       });
 
   const byStatus = {
     published:      content.filter(c => c.status === 'published').length,
@@ -45,6 +45,16 @@ export function StatsPage() {
   return (
     <DashboardLayout activeItem="stats">
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {(statsError || contentError) && (
+            <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <svg width="16" height="16" fill="none" stroke="var(--red)" strokeWidth="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span style={{ fontSize: '13px', color: 'var(--red)' }}>Failed to load stats. {statsErr?.message || contentErr?.message || ''}</span>
+              <button type="button" onClick={() => window.location.reload()} style={{ marginLeft: 'auto', padding: '5px 12px', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Retry</button>
+            </div>
+          )}
 
           {/* Top stat row */}
           <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -114,7 +124,7 @@ export function StatsPage() {
           {/* Recent views area chart */}
           <div className="card" style={{ padding: '20px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 600, marginBottom: '16px' }}>
-              Views — Last 7 Days
+              Views, Last 7 Days
             </div>
             <svg width="100%" height="80" viewBox="0 0 560 80" preserveAspectRatio="none">
               <defs>

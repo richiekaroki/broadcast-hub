@@ -6,16 +6,36 @@ const BASE = import.meta.env.VITE_API_URL
   : '/api/v1';
 
 // ── Token helpers ─────────────────────────────────────────────────────────────
+// Cache localStorage reads to avoid repeated parsing on hot paths
+let cachedAccess: string | null = undefined as unknown as string | null;
+let cachedRefresh: string | null = undefined as unknown as string | null;
+
+const LS_VERSION = 'v1';
+const KEYS = {
+  access:  `accessToken:${LS_VERSION}`,
+  refresh: `refreshToken:${LS_VERSION}`,
+};
+
 export const tokens = {
-  get access()  { return localStorage.getItem('accessToken'); },
-  get refresh() { return localStorage.getItem('refreshToken'); },
+  get access() {
+    if (cachedAccess === undefined) cachedAccess = localStorage.getItem(KEYS.access);
+    return cachedAccess;
+  },
+  get refresh() {
+    if (cachedRefresh === undefined) cachedRefresh = localStorage.getItem(KEYS.refresh);
+    return cachedRefresh;
+  },
   set(access: string, refresh: string) {
-    localStorage.setItem('accessToken', access);
-    localStorage.setItem('refreshToken', refresh);
+    localStorage.setItem(KEYS.access, access);
+    localStorage.setItem(KEYS.refresh, refresh);
+    cachedAccess = access;
+    cachedRefresh = refresh;
   },
   clear() {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    localStorage.removeItem(KEYS.access);
+    localStorage.removeItem(KEYS.refresh);
+    cachedAccess = null;
+    cachedRefresh = null;
   },
 };
 

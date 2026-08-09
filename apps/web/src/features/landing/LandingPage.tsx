@@ -1,496 +1,293 @@
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { fetchContent, fetchPrograms, fetchDashboardStats } from '../../api/client';
 
-// ── Ticker data ───────────────────────────────────────────────────────────────
-const TICKER_ITEMS = [
-  '▸ LIVE: Evening News at 19:00 EAT',
-  '▸ PUBLISHED: NSE Markets Close Higher',
-  '▸ PENDING: AFC Champions League Preview',
-  '▸ VIEWS TODAY: 849.2K',
-  '▸ UPTIME: 99.999%',
-  '▸ REDIS CACHE HIT RATIO: 94.2%',
-  '▸ CONTENT ITEMS: 42,910',
+// ── Fallback demo data (shown when API is empty or unavailable) ───────────────
+const DEMO_CONTENT = [
+  { id: '1', title: 'Evening News Bulletin — June 2026', body: 'Top stories from across Kenya and the region. Markets closed higher, with the NSE gaining 1.2% on the back of strong telecoms earnings.', status: 'published', createdAt: new Date().toISOString() },
+  { id: '2', title: 'Sports Wrap: AFC Champions League Preview', body: 'Gor Mahia face a tough away tie in the AFC Champions League preliminary round. Coach Johnstone Omolo previews the match.', status: 'published', createdAt: new Date().toISOString() },
+  { id: '3', title: 'Tech Today: AI in Kenyan Healthcare', body: 'Local startups are deploying machine learning models to improve early diagnosis in rural clinics.', status: 'published', createdAt: new Date().toISOString() },
 ];
 
-// ── Feature data ──────────────────────────────────────────────────────────────
-const FEATURES = [
-  {
-    icon: '⚡',
-    label: 'Real-Time Analytics',
-    desc:  'Monitor every interaction as it happens. Our Redis-backed infrastructure ensures zero-lag insights under extreme volume.',
-    link:  'Learn More →',
-  },
-  {
-    icon: '📋',
-    label: 'Lifecycle Mgmt',
-    desc:  'From raw capture to global distribution, orchestrate every stage with automated, immutable blockchain-verified logs.',
-    link:  'Deep Dive →',
-  },
-  {
-    icon: '🛡',
-    label: 'Enterprise Security',
-    desc:  'Military-grade encryption for all content streams. Granular access controls and comprehensive auditability for compliance.',
-    link:  'Security Portal →',
-  },
+const DEMO_PROGRAMS = [
+  { id: '1', title: 'Morning Drive Show', startTime: new Date(Date.now() + 3600000).toISOString(), endTime: new Date(Date.now() + 7200000).toISOString(), status: 'scheduled' },
+  { id: '2', title: 'Midday News Bulletin', startTime: new Date(Date.now() + 14400000).toISOString(), endTime: new Date(Date.now() + 18000000).toISOString(), status: 'scheduled' },
+  { id: '3', title: 'Afternoon Talk Radio', startTime: new Date(Date.now() - 3600000).toISOString(), endTime: new Date(Date.now() + 3600000).toISOString(), status: 'live' },
 ];
+
+const DEMO_STATS = { totalUsers: 1247, totalContent: 342, publishedContent: 89, todayViews: 12400 };
+
+// ── SVG Icons ────────────────────────────────────────────────────────────────
+function IconContent() {
+  return (
+    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+    </svg>
+  );
+}
+function IconSchedule() {
+  return (
+    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  );
+}
+function IconUsers() {
+  return (
+    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+    </svg>
+  );
+}
+function IconEye() {
+  return (
+    <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+    </svg>
+  );
+}
 
 export function LandingPage() {
   const navigate = useNavigate();
 
+  // Fetch real data from API (with fallback)
+  const { data: rawContent = [] } = useQuery({
+    queryKey: ['content'],
+    queryFn: fetchContent,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: programsResponse } = useQuery({
+    queryKey: ['programs'],
+    queryFn: () => fetchPrograms(1, 10),
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: stats } = useQuery({
+    queryKey: ['dashboard-stats'],
+    queryFn: fetchDashboardStats,
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+
+  // Use real data if available, fallback to demo
+  const publishedContent = (rawContent.length > 0 ? rawContent : DEMO_CONTENT)
+    .filter((c: any) => c.status === 'published')
+    .slice(0, 3);
+
+  const programs = (programsResponse?.data?.length ? programsResponse.data : DEMO_PROGRAMS).slice(0, 3);
+
+  const platformStats = stats ?? DEMO_STATS;
+
   return (
-    <div style={{ background: 'var(--color-bg-page)', minHeight: '100vh', overflow: 'hidden' }}>
+    <div className="lp">
+      <a href="#main-content" className="skip-link">Skip to main content</a>
 
-      {/* ── Ticker strip ──────────────────────────────────────────────────── */}
-      <div style={{
-        background:    'var(--color-orange)',
-        height:        '32px',
-        display:       'flex',
-        alignItems:    'center',
-        overflow:      'hidden',
-        position:      'relative',
-      }}>
-        <div className="animate-ticker" style={{ display: 'flex', gap: '80px', whiteSpace: 'nowrap', paddingRight: '80px' }}>
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-            <span key={i} style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', fontWeight: 500, color: '#fff', letterSpacing: '0.05em' }}>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
+      {/* ── Navbar (simplified) ──────────────────────────────────────────── */}
+      <nav className="lp-nav" aria-label="Main navigation">
+        <div className="lp-nav-inner">
+          <div className="lp-logo">
+            <div className="lp-logo-icon" aria-hidden="true">
+              <svg width="16" height="16" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <span className="lp-logo-text">Wam Broadcast Hub</span>
+          </div>
 
-      {/* ── Navbar ────────────────────────────────────────────────────────── */}
-      <nav style={{
-        display:        'flex',
-        alignItems:     'center',
-        padding:        '0 60px',
-        height:         '64px',
-        background:     'rgba(10,10,10,0.95)',
-        borderBottom:   '1px solid var(--color-border)',
-        position:       'sticky',
-        top:            0,
-        zIndex:         100,
-        backdropFilter: 'blur(12px)',
-      }}>
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: 'auto' }}>
-          <div style={{
-            width: '30px', height: '30px', background: 'var(--color-orange)',
-            borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px',
-          }}>📡</div>
-          <span style={{ fontFamily: 'var(--font-display)', fontSize: '17px', fontWeight: 700, letterSpacing: '0.05em' }}>
-            BroadcastHub
-          </span>
-        </div>
+          <div className="lp-nav-links">
+            <a href="#live-preview">Live Preview</a>
+          </div>
 
-        {/* Nav links */}
-        <div style={{ display: 'flex', gap: '32px', marginRight: '40px' }}>
-          {['Features', 'Pricing', 'Analytics', 'Support'].map(l => (
-            <a key={l} href="#" style={{ fontSize: '13px', color: 'var(--color-muted)', textDecoration: 'none', letterSpacing: '0.02em', transition: 'color 0.15s' }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-muted)')}
-            >{l}</a>
-          ))}
-        </div>
-
-        {/* CTAs */}
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <button type="button" onClick={() => navigate('/login')} style={{
-            background: 'transparent', border: 'none', color: 'var(--color-text)',
-            fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-body)', padding: '8px 16px',
-          }}>Login</button>
-          <button type="button" onClick={() => navigate('/login')} style={{
-            background: 'var(--color-orange)', border: 'none', borderRadius: '6px',
-            color: '#fff', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-            fontFamily: 'var(--font-body)', padding: '9px 20px',
-          }}>Get Started</button>
+          <div className="lp-nav-actions">
+            <button type="button" className="lp-btn-primary" onClick={() => navigate('/login')}>
+              Get Started
+            </button>
+          </div>
         </div>
       </nav>
 
-      {/* ── Hero ──────────────────────────────────────────────────────────── */}
-      <section style={{
-        position:   'relative',
-        padding:    '100px 60px 80px',
-        textAlign:  'center',
-        overflow:   'hidden',
-      }}>
-        {/* BG grid */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `
-            linear-gradient(rgba(232,89,60,0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(232,89,60,0.05) 1px, transparent 1px)
-          `,
-          backgroundSize: '60px 60px',
-          pointerEvents: 'none',
-        }} />
-        {/* Radial glow */}
-        <div style={{
-          position: 'absolute', top: '10%', left: '50%', transform: 'translateX(-50%)',
-          width: '600px', height: '300px',
-          background: 'radial-gradient(ellipse, rgba(232,89,60,0.15) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
+      <main id="main-content">
+        {/* ── Hero ────────────────────────────────────────────────────────── */}
+        <header className="lp-hero">
+          <div className="lp-hero-content">
+            <h1 className="lp-hero-title">
+              Content that ships.<br />
+              <span className="text-gradient">Broadcasts that shine.</span>
+            </h1>
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          {/* Badge */}
-          <div className="animate-fade-up opacity-0" style={{
-            display:      'inline-flex',
-            alignItems:   'center',
-            gap:          '8px',
-            padding:      '5px 14px',
-            background:   'rgba(232,89,60,0.1)',
-            border:       '1px solid rgba(232,89,60,0.3)',
-            borderRadius: '20px',
-            fontSize:     '11px',
-            fontFamily:   'var(--font-mono)',
-            color:        'var(--color-orange)',
-            letterSpacing: '0.08em',
-            textTransform: 'uppercase',
-            marginBottom: '28px',
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-orange)', display: 'inline-block' }} className="animate-pulse-dot" />
-            Enterprise Ready · v4.2 Pro
-          </div>
+            <p className="lp-hero-sub">
+              Manage articles, schedules, and broadcasts from one dashboard.
+              Built for radio stations, TV networks, and digital publishers.
+            </p>
 
-          {/* Headline */}
-          <h1 className="animate-fade-up opacity-0 delay-100" style={{
-            fontFamily:   'var(--font-display)',
-            fontSize:     'clamp(52px, 9vw, 96px)',
-            fontWeight:   900,
-            lineHeight:   0.95,
-            letterSpacing: '-0.01em',
-            margin:       '0 0 24px',
-            textTransform: 'uppercase',
-          }}>
-            MASTER YOUR<br />
-            <span className="text-gradient">CONTENT LIFECYCLE</span>
-          </h1>
-
-          {/* Subheading */}
-          <p className="animate-fade-up opacity-0 delay-200" style={{
-            fontSize:    '16px',
-            color:       'var(--color-muted)',
-            maxWidth:    '520px',
-            margin:      '0 auto 40px',
-            lineHeight:  1.7,
-          }}>
-            High-velocity data dashboards and real-time content orchestration for world-class media teams. Streamline every byte from draft to global publication.
-          </p>
-
-          {/* CTAs */}
-          <div className="animate-fade-up opacity-0 delay-300" style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginBottom: '80px' }}>
-            <button type="button" onClick={() => navigate('/login')} style={{
-              padding:      '14px 32px',
-              background:   'var(--color-orange)',
-              border:       'none',
-              borderRadius: '8px',
-              color:        '#fff',
-              fontSize:     '14px',
-              fontWeight:   700,
-              cursor:       'pointer',
-              fontFamily:   'var(--font-display)',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              transition:   'background 0.15s, transform 0.15s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-orange-hover)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-orange)'; e.currentTarget.style.transform = 'translateY(0)'; }}
-            >
-              Get Started Now
-            </button>
-            <button type="button" onClick={() => document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' })} style={{
-              padding:      '14px 32px',
-              background:   'transparent',
-              border:       '1px solid var(--color-border)',
-              borderRadius: '8px',
-              color:        'var(--color-text)',
-              fontSize:     '14px',
-              fontFamily:   'var(--font-display)',
-              letterSpacing: '0.06em',
-              textTransform: 'uppercase',
-              cursor:       'pointer',
-              transition:   'border-color 0.15s',
-            }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--color-border)')}
-            >
-              Watch Demo
-            </button>
-          </div>
-
-          {/* Live performance preview card */}
-          <div id="preview" className="animate-fade-up opacity-0 delay-400" style={{
-            maxWidth:     '680px',
-            margin:       '0 auto',
-            background:   'var(--color-bg-card)',
-            border:       '1px solid var(--color-border)',
-            borderRadius: '16px',
-            overflow:     'hidden',
-            textAlign:    'left',
-            boxShadow:    '0 40px 80px rgba(0,0,0,0.5)',
-          }}>
-            {/* Card top bar */}
-            <div style={{
-              display:       'flex',
-              justifyContent: 'space-between',
-              alignItems:    'center',
-              padding:       '14px 20px',
-              borderBottom:  '1px solid var(--color-border)',
-              background:    'rgba(255,255,255,0.02)',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--color-orange)' }} className="animate-pulse-dot" />
-                <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                  Live Performance
-                </span>
-              </div>
-              <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)' }}>
-                ● NODE: US-EAST-1
-              </span>
-            </div>
-
-            {/* Stats row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0 }}>
-              {[
-                { label: 'Total Reach',  value: '2.4M',  sub: '↑ +12.4%',   color: 'var(--color-green)' },
-                { label: 'Engagement',   value: '84.2%', sub: '▲ STABLE',    color: 'var(--color-green)' },
-                { label: 'Latency',      value: '124ms', sub: '● OPTIMIZED', color: 'var(--color-orange)' },
-              ].map(({ label, value, sub, color }, i) => (
-                <div key={i} style={{
-                  padding:     '20px 24px',
-                  borderRight: i < 2 ? '1px solid var(--color-border)' : 'none',
-                  textAlign:   'center',
-                }}>
-                  <div style={{ fontSize: '11px', color: 'var(--color-muted)', fontFamily: 'var(--font-mono)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '8px' }}>
-                    {label}
-                  </div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 700, marginBottom: '4px' }}>
-                    {value}
-                  </div>
-                  <div style={{ fontSize: '11px', color, fontFamily: 'var(--font-mono)' }}>
-                    {sub}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* System log table */}
-            <div style={{ borderTop: '1px solid var(--color-border)' }}>
-              <div style={{ padding: '10px 20px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--color-border)' }}>
-                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                  System Log v4.2
-                </span>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', fontSize: '11px', fontFamily: 'var(--font-mono)', padding: '8px 20px', color: 'var(--color-muted)', borderBottom: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.01)' }}>
-                <span>ASSET ID</span><span>DEPLOYMENT</span><span style={{ textAlign: 'right' }}>STATUS</span>
-              </div>
-              {[
-                { id: '#8421-X', name: 'GLOBAL_NEWS_REEL_HD',       status: 'ACTIVE',  color: 'var(--color-green)' },
-                { id: '#8419-B', name: 'MARKET_UPDATE_Q5_SUMMARY',  status: 'QUEUED',  color: 'var(--color-muted)' },
-              ].map(row => (
-                <div key={row.id} style={{ display: 'grid', gridTemplateColumns: '120px 1fr 80px', fontSize: '12px', fontFamily: 'var(--font-mono)', padding: '12px 20px', borderBottom: '1px solid var(--color-border)', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--color-orange)' }}>{row.id}</span>
-                  <span style={{ color: 'var(--color-text)' }}>{row.name}</span>
-                  <span style={{ textAlign: 'right' }}>
-                    <span style={{
-                      padding: '2px 8px', borderRadius: '4px',
-                      background: row.status === 'ACTIVE' ? 'rgba(34,197,94,0.15)' : 'rgba(107,104,96,0.15)',
-                      color: row.color, fontSize: '10px', letterSpacing: '0.06em',
-                    }}>{row.status}</span>
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Features ──────────────────────────────────────────────────────── */}
-      <section style={{ padding: '100px 60px', borderTop: '1px solid var(--color-border)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 5vw, 60px)', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.02em', margin: '0 0 16px' }}>
-            PRECISION <span className="text-gradient">ENGINEERING</span>
-          </h2>
-          <p style={{ color: 'var(--color-muted)', fontSize: '15px', maxWidth: '480px', margin: '0 auto' }}>
-            Built for mission-critical media delivery where every millisecond matters.
-          </p>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', maxWidth: '960px', margin: '0 auto' }}>
-          {FEATURES.map(f => (
-            <div key={f.label} className="card-hover" style={{
-              background:   'var(--color-bg-card)',
-              border:       '1px solid var(--color-border)',
-              borderRadius: '12px',
-              padding:      '32px',
-            }}>
-              <div style={{
-                width: '44px', height: '44px', background: 'var(--color-orange)',
-                borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '20px', marginBottom: '20px',
-              }}>{f.icon}</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '12px' }}>
-                {f.label}
-              </div>
-              <p style={{ fontSize: '13px', color: 'var(--color-muted)', lineHeight: 1.7, marginBottom: '20px' }}>
-                {f.desc}
-              </p>
-              <a href="#" style={{ fontSize: '12px', color: 'var(--color-orange)', textDecoration: 'none', fontWeight: 600, letterSpacing: '0.04em' }}>
-                {f.link}
+            <div className="lp-hero-cta">
+              <button type="button" className="lp-btn-primary lg" onClick={() => navigate('/login')}>
+                Start Free
+              </button>
+              <a href="#live-preview" className="lp-btn-ghost lg" style={{ textDecoration: 'none' }}>
+                See it in action
               </a>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </header>
 
-      {/* ── Scale section ─────────────────────────────────────────────────── */}
-      <section style={{
-        padding:    '100px 60px',
-        background: 'var(--color-bg-card)',
-        borderTop:  '1px solid var(--color-border)',
-      }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '80px', alignItems: 'center', maxWidth: '1000px', margin: '0 auto' }}>
-          {/* Laptop mockup */}
-          <div style={{
-            background:   'var(--color-bg-elevated)',
-            border:       '1px solid var(--color-border)',
-            borderRadius: '16px',
-            padding:      '24px',
-            aspectRatio:  '4/3',
-            display:      'flex',
-            flexDirection: 'column',
-            gap:          '12px',
-            boxShadow:    '0 20px 60px rgba(0,0,0,0.4)',
-          }}>
-            {/* Mock dashboard bars */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
-              {['#ff5f57','#ffbe2e','#28c840'].map(c => <div key={c} style={{ width: 8, height: 8, borderRadius: '50%', background: c }} />)}
-            </div>
-            {[80,55,70,40,90,60].map((h, i) => (
-              <div key={i} style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <div style={{ width: '60px', height: '6px', background: 'var(--color-border)', borderRadius: '3px', flexShrink: 0 }} />
-                <div style={{ flex: 1, height: '6px', background: 'var(--color-border)', borderRadius: '3px', overflow: 'hidden' }}>
-                  <div style={{ width: `${h}%`, height: '100%', background: i % 3 === 0 ? 'var(--color-orange)' : 'var(--color-bg-elevated)', borderRadius: '3px' }} />
-                </div>
+        {/* ── Stats strip ─────────────────────────────────────────────────── */}
+        <div className="lp-stats">
+          <div className="lp-stats-inner">
+            {[
+              { value: platformStats.totalUsers.toLocaleString(), label: 'Users' },
+              { value: platformStats.publishedContent.toString(), label: 'Published' },
+              { value: platformStats.todayViews.toLocaleString(), label: 'Views Today' },
+              { value: '99.99%', label: 'Uptime' },
+            ].map(s => (
+              <div key={s.label} className="lp-stat">
+                <span className="lp-stat-value">{s.value}</span>
+                <span className="lp-stat-label">{s.label}</span>
               </div>
             ))}
-            <svg width="100%" height="50" viewBox="0 0 300 50" style={{ marginTop: '8px' }}>
-              <path d="M0,40 C50,35 100,10 150,20 C200,30 250,5 300,15" fill="none" stroke="var(--color-orange)" strokeWidth="1.5" opacity="0.7"/>
-              <path d="M0,40 C50,35 100,10 150,20 C200,30 250,5 300,15 L300,50 L0,50Z" fill="rgba(232,89,60,0.1)"/>
-            </svg>
           </div>
+        </div>
 
-          {/* Text */}
-          <div>
-            <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(32px, 4vw, 52px)', fontWeight: 900, textTransform: 'uppercase', lineHeight: 1, marginBottom: '24px' }}>
-              SCALE WITHOUT<br/><span className="text-gradient">FRICTION</span>
+        {/* ── Live Preview Section ────────────────────────────────────────── */}
+        <section id="live-preview" className="lp-features" style={{ borderTop: '1px solid var(--border)' }}>
+          <div className="lp-section-header">
+            <h2 className="lp-section-title">
+              See it in action
             </h2>
-            <p style={{ color: 'var(--color-muted)', fontSize: '14px', lineHeight: 1.8, marginBottom: '32px' }}>
-              Engineered to handle viral traffic spikes without degradation. Our global mesh network automatically balances distribution across 300+ edge nodes.
-            </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {[
-                { stat: '99.999%', label: 'Guaranteed Uptime', sub: 'SLA backed with direct financial redundancy.' },
-                { stat: 'GLOBAL',  label: 'CDN Mesh',          sub: 'Sub-60ms delivery to 95% of the global population.' },
-                { stat: '24/7',    label: 'Elite Ops Team',     sub: 'Direct access to systems engineers around the clock.' },
-              ].map(item => (
-                <div key={item.label} style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                  <div style={{ color: 'var(--color-orange)', fontSize: '12px', marginTop: '2px', flexShrink: 0 }}>✓</div>
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600 }}>{item.stat} {item.label}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--color-muted)', marginTop: '2px' }}>{item.sub}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA footer ────────────────────────────────────────────────────── */}
-      <section style={{
-        background:  'var(--color-orange)',
-        padding:     '80px 60px',
-        textAlign:   'center',
-        position:    'relative',
-        overflow:    'hidden',
-      }}>
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: `linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-          pointerEvents: 'none',
-        }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: 900, textTransform: 'uppercase', color: '#fff', lineHeight: 1, marginBottom: '16px' }}>
-            START BROADCASTING SMARTER
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '40px', fontSize: '15px' }}>
-            Join 600+ media titans dominating their markets.
-          </p>
-          <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
-            <button type="button" onClick={() => navigate('/login')} style={{
-              padding: '16px 36px', background: '#fff', border: 'none', borderRadius: '8px',
-              color: 'var(--color-orange)', fontSize: '14px', fontWeight: 700,
-              fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}>Deploy Your Instance</button>
-            <button type="button" style={{
-              padding: '16px 36px', background: 'transparent',
-              border: '2px solid rgba(255,255,255,0.5)', borderRadius: '8px',
-              color: '#fff', fontSize: '14px', fontWeight: 700,
-              fontFamily: 'var(--font-display)', letterSpacing: '0.06em', textTransform: 'uppercase',
-              cursor: 'pointer',
-            }}>Request Demo</button>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <footer style={{
-        background:  'var(--color-bg-card)',
-        borderTop:   '1px solid var(--color-border)',
-        padding:     '48px 60px 32px',
-      }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', gap: '40px', marginBottom: '40px' }}>
-          {/* Brand */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-              <div style={{ width: 28, height: 28, background: 'var(--color-orange)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px' }}>📡</div>
-              <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 700, letterSpacing: '0.04em' }}>BroadcastHub</span>
-            </div>
-            <p style={{ fontSize: '12px', color: 'var(--color-muted)', lineHeight: 1.7, maxWidth: '220px' }}>
-              The infrastructure of choice for high-velocity media distribution and lifecycle management.
+            <p className="lp-section-sub">
+              Real content and schedules from the platform. No login required.
             </p>
           </div>
-          {/* Columns */}
-          {[
-            { label: 'Product',  links: ['Performance', 'Security Stack', 'Developer API'] },
-            { label: 'Company',  links: ['About Us', 'Network Status', 'Resources'] },
-            { label: 'Connect',  links: ['Twitter', 'GitHub', 'Discord'] },
-          ].map(col => (
-            <div key={col.label}>
-              <div style={{ fontSize: '11px', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '16px', fontWeight: 600 }}>
-                {col.label}
+
+          <div className="lp-preview-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+            {/* Published Content */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <IconContent />
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, margin: 0 }}>
+                  Published Content
+                </h3>
               </div>
-              {col.links.map(l => (
-                <div key={l} style={{ marginBottom: '8px' }}>
-                  <a href="#" style={{ fontSize: '13px', color: 'var(--color-muted)', textDecoration: 'none', transition: 'color 0.15s' }}
-                    onMouseEnter={e => (e.currentTarget.style.color = 'var(--color-text)')}
-                    onMouseLeave={e => (e.currentTarget.style.color = 'var(--color-muted)')}
-                  >{l}</a>
-                </div>
-              ))}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {publishedContent.map((item: any) => (
+                  <div key={item.id} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 10, padding: '16px' }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 600, marginBottom: '6px' }}>
+                      {item.title}
+                    </div>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {item.body}
+                    </div>
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--text-tertiary)' }}>
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
 
-        <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--color-muted)' }}>
-          <span>© 2026 BroadcastHub Technologies. All rights reserved. Built for high-velocity streaming.</span>
-          <div style={{ display: 'flex', gap: '20px' }}>
-            {['Terms of Service', 'Privacy Policy', 'Status', 'Contact Us'].map(l => (
-              <a key={l} href="#" style={{ color: 'var(--color-muted)', textDecoration: 'none' }}>{l}</a>
+            {/* Broadcast Schedule */}
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                <IconSchedule />
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '16px', fontWeight: 600, margin: 0 }}>
+                  Broadcast Schedule
+                </h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {programs.map((prog: any) => {
+                  const start = new Date(prog.startTime);
+                  const end = new Date(prog.endTime);
+                  const isLive = prog.status === 'live';
+                  return (
+                    <div key={prog.id} style={{ background: 'var(--bg-card)', border: `1px solid ${isLive ? 'rgba(34,197,94,0.3)' : 'var(--border)'}`, borderRadius: 10, padding: '16px', position: 'relative' }}>
+                      {isLive && (
+                        <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 6, fontSize: 10, color: '#22C55E', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22C55E', animation: 'live-dot 2s ease-in-out infinite' }} />
+                          Live
+                        </div>
+                      )}
+                      <div style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 600, marginBottom: '6px', paddingRight: isLive ? 50 : 0 }}>
+                        {prog.title}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                        {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} to {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                      <div style={{ marginTop: '8px' }}>
+                        <span className={`status-${prog.status === 'live' ? 'published' : 'pending'}`} style={{ fontSize: '10px', padding: '3px 8px', borderRadius: 4, fontWeight: 500 }}>
+                          {prog.status}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Features (compact) ──────────────────────────────────────────── */}
+        <section className="lp-how">
+          <div className="lp-section-header">
+            <h2 className="lp-section-title">
+              Built for teams that ship fast
+            </h2>
+          </div>
+
+          <div className="lp-steps">
+            {[
+              { num: '01', title: 'Create', desc: 'Write content in a clean editor. Save as draft until ready.' },
+              { num: '02', title: 'Review', desc: 'Submit for review. Editors and admins approve with feedback.' },
+              { num: '03', title: 'Publish', desc: 'One click to go live. Analytics start tracking immediately.' },
+            ].map(s => (
+              <div key={s.num} className="lp-step">
+                <div className="lp-step-num">{s.num}</div>
+                <h3 className="lp-step-title">{s.title}</h3>
+                <p className="lp-step-desc">{s.desc}</p>
+              </div>
             ))}
           </div>
+        </section>
+
+        {/* ── CTA ─────────────────────────────────────────────────────────── */}
+        <section className="lp-cta">
+          <h2 className="lp-cta-title">
+            Ready to ship faster?
+          </h2>
+          <p className="lp-cta-sub">
+            Free for small teams. No credit card required.
+          </p>
+          <button type="button" className="lp-btn-primary white lg" onClick={() => navigate('/login')}>
+            Start Free Trial
+          </button>
+        </section>
+      </main>
+
+      {/* ── Footer ──────────────────────────────────────────────────────── */}
+      <footer className="lp-footer" role="contentinfo">
+        <div className="lp-footer-inner">
+          <div className="lp-footer-brand">
+            <div className="lp-logo">
+              <div className="lp-logo-icon" aria-hidden="true">
+                <svg width="14" height="14" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+              </div>
+              <span className="lp-logo-text">Wam Broadcast Hub</span>
+            </div>
+            <p className="lp-footer-desc">
+              Content distribution for radio, TV, and digital publishers.
+            </p>
+          </div>
+          <div className="lp-footer-links">
+            <a href="#live-preview">Live Preview</a>
+            <a href="/login">Get Started</a>
+          </div>
+        </div>
+        <div className="lp-footer-bottom">
+          <span>&copy; 2026 Wam Broadcast Hub</span>
         </div>
       </footer>
     </div>

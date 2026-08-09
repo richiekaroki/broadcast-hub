@@ -36,6 +36,14 @@ export function MobileSidebar({ activeItem }: MobileSidebarProps) {
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
+  // Close on Escape key
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open]);
+
   if (!isMob) {
     return <Sidebar activeItem={activeItem} />;
   }
@@ -65,10 +73,13 @@ export function MobileSidebar({ activeItem }: MobileSidebarProps) {
       <div
         className={`sidebar-backdrop ${open ? 'open' : ''}`}
         onClick={() => setOpen(false)}
+        role="button"
+        aria-label="Close navigation"
+        tabIndex={open ? 0 : -1}
       />
 
       {/* Sliding sidebar */}
-      <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 200, height: '100vh', transform: open ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.28s cubic-bezier(0.22,1,0.36,1)' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, zIndex: 200, height: '100vh', transform: open ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.28s cubic-bezier(0.22,1,0.36,1)' }} aria-hidden={!open}>
         <Sidebar activeItem={activeItem} />
       </div>
     </>

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { memo, ReactNode } from 'react';
 
 interface MetricCardProps {
   label:   string;
@@ -9,7 +9,7 @@ interface MetricCardProps {
   loading?: boolean;
 }
 
-export function MetricCard({ label, value, icon, change, trend = 'neutral', loading }: MetricCardProps) {
+export const MetricCard = memo(function MetricCard({ label, value, icon, change, trend = 'neutral', loading }: MetricCardProps) {
   const trendColor =
     trend === 'up'   ? 'var(--color-green)' :
     trend === 'down' ? 'var(--color-red)'   :
@@ -33,7 +33,7 @@ export function MetricCard({ label, value, icon, change, trend = 'neutral', load
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-        <div style={{ color: 'var(--color-muted)', lineHeight: 1 }}>{icon}</div>
+        <div style={{ color: 'var(--color-muted)', lineHeight: 1 }} aria-hidden="true">{icon}</div>
         {loading ? (
           <div className="skeleton" style={{ width: 48, height: 18 }} />
         ) : change ? (
@@ -67,4 +67,4 @@ export function MetricCard({ label, value, icon, change, trend = 'neutral', load
       )}
     </div>
   );
-}
+});

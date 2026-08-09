@@ -39,7 +39,12 @@ export function LoginPage() {
             borderRadius: '16px',
             padding: '40px 32px',
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📧</div>
+            <div style={{ marginBottom: '16px' }}>
+              <svg width="48" height="48" fill="none" stroke="var(--color-orange)" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
             <h2 style={{
               fontFamily: 'var(--font-display)',
               fontSize: '20px',
@@ -116,10 +121,14 @@ export function LoginPage() {
           <div style={{
             width: '48px', height: '48px', background: 'var(--color-orange)',
             borderRadius: '10px', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', fontSize: '24px', margin: '0 auto 16px',
-          }}>📡</div>
+            justifyContent: 'center', margin: '0 auto 16px',
+          }}>
+            <svg width="24" height="24" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 700, letterSpacing: '0.04em' }}>
-            BroadcastHub
+            Wam Broadcast Hub
           </div>
           <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
             Sign in to your workspace
@@ -222,9 +231,6 @@ export function LoginPage() {
           </div>
           <div style={{ lineHeight: 1.6 }}>
             Enter your email and we'll send you a magic link to sign in. No password required.
-          </div>
-          <div style={{ marginTop: '8px', borderTop: '1px solid var(--color-border)', paddingTop: '8px', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
-            Demo: admin@demo.com, editor@demo.com, presenter@demo.com
           </div>
         </div>
       </div>

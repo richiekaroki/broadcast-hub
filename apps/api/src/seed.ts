@@ -1,5 +1,5 @@
 /**
- * BroadcastHub — Database Seed Script  (v3 — Postgres only)
+ * Wam Broadcast Hub — Database Seed Script  (v3 — Postgres only)
  * -----------------------------------------------------------
  * Run:  npx ts-node -r tsconfig-paths/register src/seed.ts
  *   or: npm run seed
@@ -53,7 +53,7 @@ function daysAgo(n: number): Date {
 
 // ── Main seed ─────────────────────────────────────────────────────────────────
 async function seed() {
-  console.log('🌱  BroadcastHub seed starting…\n');
+  console.log('Wam Broadcast Hub seed starting…\n');
 
   await AppDataSource.initialize();
   console.log('✅  PostgreSQL connected (Neon)\n');

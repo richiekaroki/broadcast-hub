@@ -48,30 +48,6 @@ export function SettingsPage() {
             </div>
           </div>
 
-          {/* Demo credentials */}
-          <div className="card anim-slide-up d-2" style={{ padding: '20px', marginBottom: '14px' }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: '16px' }}>
-              Demo Credentials
-            </div>
-            <div style={{ background: 'var(--orange-dim)', border: '1px solid rgba(232,89,60,0.2)', borderRadius: 'var(--r-md)', padding: '14px' }}>
-              <div style={{ fontSize: '11px', color: 'var(--orange)', fontWeight: 600, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                All passwords: Demo1234!
-              </div>
-              {[
-                ['super_admin',  'admin@demo.com'],
-                ['editor',       'editor@demo.com'],
-                ['presenter',    'presenter@demo.com'],
-                ['advertiser',   'advertiser@demo.com'],
-                ['viewer',       'viewer@demo.com'],
-              ].map(([role, email]) => (
-                <div key={role} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px', fontSize: '12px' }}>
-                  <span style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-mono)' }}>{role}</span>
-                  <span style={{ color: 'var(--text-tertiary)', fontFamily: 'var(--font-mono)' }}>{email}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* API info */}
           <div className="card anim-slide-up d-3" style={{ padding: '20px', marginBottom: '14px' }}>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: '14px' }}>

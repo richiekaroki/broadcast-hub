@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo, useState } from 'react';
 import { DashboardLayout } from '../../components/DashboardLayout';
 import { ContentTable } from '../../components/ContentTable';
 import { CacheIndicator } from '../../components/CacheIndicator';
@@ -103,17 +104,24 @@ function TrafficChart() {
 // ── Main DashboardPage ────────────────────────────────────────────────────────
 export function DashboardPage() {
   const { userName, userRole } = useAppSelector(s => s.auth);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: stats, isLoading: statsLoading } = useQuery({
+  const { data: stats, isLoading: statsLoading, isError: statsError } = useQuery({
     queryKey:       ['dashboard-stats'],
     queryFn:        fetchDashboardStats,
     refetchInterval: 30_000,
   });
 
-  const { data: content = [], isLoading: contentLoading } = useQuery({
+  const { data: content = [], isLoading: contentLoading, isError: contentError } = useQuery({
     queryKey: ['content'],
     queryFn:  fetchContent,
   });
+
+  const filteredContent = useMemo(() => {
+    if (!searchQuery.trim()) return content;
+    const q = searchQuery.toLowerCase();
+    return content.filter(c => c.title.toLowerCase().includes(q) || c.body.toLowerCase().includes(q));
+  }, [content, searchQuery]);
 
   return (
     <DashboardLayout
@@ -121,9 +129,16 @@ export function DashboardPage() {
       headerRight={
         <>
           <div style={{ flex: 1, maxWidth: '460px', position: 'relative' }}>
-            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-muted)', fontSize: '13px' }}>🔍</span>
+            <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--color-muted)' }} aria-hidden="true">
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
             <input
               placeholder="Search..."
+              aria-label="Search content"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
               style={{
                 width: '100%', padding: '7px 10px 7px 32px',
                 background: 'var(--color-bg-elevated)',
@@ -136,8 +151,8 @@ export function DashboardPage() {
 
           <CacheIndicator cached={stats?.cached ?? null} />
 
-          <button type="button" style={iconBtn}><IconBell /></button>
-          <button type="button" style={iconBtn}><IconHistory /></button>
+          <button type="button" style={iconBtn} aria-label="Notifications"><IconBell /></button>
+          <button type="button" style={iconBtn} aria-label="View history"><IconHistory /></button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '9px', marginLeft: '4px' }}>
             <div style={{
@@ -155,7 +170,16 @@ export function DashboardPage() {
       }
     >
       {/* Metric cards row */}
-      <div className="metrics-row">
+      {(statsError || contentError) && (
+        <div style={{ background: 'var(--red-dim)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '10px', padding: '14px 18px', marginBottom: '18px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <svg width="16" height="16" fill="none" stroke="var(--red)" strokeWidth="1.5" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span style={{ fontSize: '13px', color: 'var(--red)' }}>Failed to load data. Check your connection and try again.</span>
+          <button type="button" onClick={() => window.location.reload()} style={{ marginLeft: 'auto', padding: '5px 12px', background: 'var(--red)', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '12px', cursor: 'pointer' }}>Retry</button>
+        </div>
+      )}
+      <div className="metrics-row" style={{ display: 'flex', gap: '14px', marginBottom: '22px' }}>
         <MetricCard label="Total Users"  value={stats?.totalUsers ?? null}       icon={<IconUsers />}  change="12%"  trend="up"      loading={statsLoading} />
         <MetricCard label="Content"      value={stats?.totalContent ?? null}     icon={<IconDoc />}    change="8.4%" trend="up"      loading={statsLoading} />
         <MetricCard label="Published"    value={stats?.publishedContent ?? null} icon={<IconCheck />}  change="0%"   trend="neutral" loading={statsLoading} />
@@ -164,11 +188,11 @@ export function DashboardPage() {
 
       {/* Content table */}
       <div style={{ marginBottom: '22px' }}>
-        <ContentTable items={content} loading={contentLoading} />
+        <ContentTable items={filteredContent} loading={contentLoading} />
       </div>
 
       {/* Bottom row */}
-      <div className="bottom-row">
+      <div className="bottom-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
 
         {/* Traffic chart — glowing curve */}
         <TrafficChart />

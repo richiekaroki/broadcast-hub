@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { ContentItem, ContentStatus } from '../api/client';
 
 interface ContentTableProps {
@@ -46,7 +47,7 @@ const TH: React.CSSProperties = {
   borderBottom:  '1px solid var(--color-border)',
 };
 
-export function ContentTable({ items, loading }: ContentTableProps) {
+export const ContentTable = memo(function ContentTable({ items, loading }: ContentTableProps) {
   return (
     <div style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '12px', overflow: 'hidden' }}>
       {/* Table header */}
@@ -90,7 +91,7 @@ export function ContentTable({ items, loading }: ContentTableProps) {
             ) : items.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ ...COL, textAlign: 'center', color: 'var(--color-muted)', padding: '40px' }}>
-                  No content yet — create your first draft
+                  No content yet, create your first draft
                 </td>
               </tr>
             ) : (
@@ -156,7 +157,7 @@ export function ContentTable({ items, loading }: ContentTableProps) {
                         color: 'var(--color-muted)', cursor: 'pointer',
                         fontSize: '18px', padding: '0 4px',
                         lineHeight: 1,
-                      }}>⋮</button>
+                      }} aria-label={`Actions for ${item.title}`}>⋮</button>
                     </td>
                   </tr>
                 );
@@ -172,9 +173,9 @@ export function ContentTable({ items, loading }: ContentTableProps) {
         <span style={{ fontSize: '13px', color: 'var(--color-muted)' }}>
           Showing 1 to {items.length} of {items.length} entries
         </span>
-        <div style={{ display: 'flex', gap: '4px' }}>
+        <div style={{ display: 'flex', gap: '4px' }} role="navigation" aria-label="Pagination">
           {['‹', '1', '2', '3', '›'].map((p, i) => (
-            <button type="button" key={i} style={{
+            <button type="button" key={i} aria-label={p === '1' ? 'Page 1, current page' : p === '‹' ? 'Previous page' : p === '›' ? 'Next page' : `Page ${p}`} aria-current={p === '1' ? 'page' : undefined} style={{
               width: 30, height: 30, borderRadius: '6px',
               border: '1px solid var(--color-border)',
               background: p === '1' ? 'var(--color-orange)' : 'transparent',
@@ -187,7 +188,7 @@ export function ContentTable({ items, loading }: ContentTableProps) {
       </div>
     </div>
   );
-}
+});
 
 const outlineBtn: React.CSSProperties = {
   padding:      '8px 16px',

@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setAuthenticated } from '../store/authSlice';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -12,7 +13,7 @@ const NAV: { id: NavItem; label: string; path: string; icon: React.ReactNode }[]
   { id: 'settings',  label: 'Settings',  path: '/settings',  icon: <SettingsIcon /> },
 ];
 
-export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
+export const Sidebar = memo(function Sidebar({ activeItem }: { activeItem?: NavItem }) {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,9 +27,15 @@ export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
     'dashboard'
   );
 
+  const handleLogout = useCallback(() => {
+    dispatch(setAuthenticated(false));
+    navigate('/login');
+  }, [dispatch, navigate]);
+
   return (
     <aside
       className="anim-slide-in d-0"
+      aria-label="Sidebar"
       style={{
         width:         '196px',
         minHeight:     '100vh',
@@ -50,12 +57,16 @@ export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
             background: 'var(--orange)',
             borderRadius: '7px',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '14px', flexShrink: 0,
+            flexShrink: 0,
             boxShadow: '0 2px 8px rgba(232,89,60,0.35)',
-          }}>📡</div>
+          }} aria-hidden="true">
+            <svg width="16" height="16" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+            </svg>
+          </div>
           <div>
             <div style={{ fontFamily: 'var(--font-display)', fontSize: '15px', fontWeight: 700, letterSpacing: '0.03em', lineHeight: 1.15 }}>
-              BroadcastHub
+              Wam Broadcast Hub
             </div>
             <div style={{ fontSize: '9px', color: 'var(--text-tertiary)', letterSpacing: '0.1em', textTransform: 'uppercase', marginTop: '1px' }}>
               High-Velocity CMS
@@ -65,7 +76,7 @@ export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: '8px 0' }}>
+      <nav aria-label="Main navigation" style={{ flex: 1, padding: '8px 0' }}>
         {NAV.map((item, i) => {
           const isActive = item.id === current;
           return (
@@ -73,6 +84,7 @@ export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
               key={item.id}
               onClick={() => navigate(item.path)}
               className={`nav-item anim-slide-in d-${i + 1} ${isActive ? 'active' : ''}`}
+              aria-current={isActive ? 'page' : undefined}
             >
               <span style={{ width: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {item.icon}
@@ -82,7 +94,7 @@ export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
               {/* Live pulsing dot */}
               {item.id === 'live' && (
                 <span style={{ marginLeft: 'auto' }}>
-                  <span className="live-dot" style={{ width: 6, height: 6 }} />
+                  <span className="live-dot" style={{ width: 6, height: 6 }} aria-hidden="true" />
                 </span>
               )}
             </button>
@@ -136,8 +148,9 @@ export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
             </div>
           </div>
           <button type="button"
-            onClick={() => { dispatch(setAuthenticated(false)); navigate('/login'); }}
+            onClick={handleLogout}
             title="Sign out"
+            aria-label="Sign out"
             style={{ background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: '13px', padding: '2px', transition: 'color 0.15s', flexShrink: 0 }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
@@ -146,7 +159,7 @@ export function Sidebar({ activeItem }: { activeItem?: NavItem }) {
       </div>
     </aside>
   );
-}
+});
 
 // ── Icon components ───────────────────────────────────────────────────────────
 function DashIcon()    { return <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>; }

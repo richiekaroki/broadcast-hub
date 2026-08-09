@@ -13,15 +13,18 @@ function decodeToken(t: string | null): Partial<AuthState> {
   if (!t) return {};
   try {
     const p = JSON.parse(atob(t.split('.')[1]));
-    return { userEmail: p.email ?? '', userRole: p.role ?? 'viewer' };
+    const email = p.email ?? '';
+    const name = email ? email.split('@')[0].replace(/\./g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : 'User';
+    return { userEmail: email, userRole: p.role ?? 'viewer', userName: name };
   } catch { return {}; }
 }
 
-const token = localStorage.getItem('accessToken');
+const LS_VERSION = 'v1';
+const token = localStorage.getItem(`accessToken:${LS_VERSION}`);
 
 const initialState: AuthState = {
   isAuthenticated: !!token,
-  userName:        'Richard Karoki',
+  userName:        'User',
   userRole:        'viewer',
   userEmail:       '',
   ...decodeToken(token),
@@ -34,8 +37,9 @@ const authSlice = createSlice({
     setAuthenticated(state, action: PayloadAction<boolean>) {
       state.isAuthenticated = action.payload;
       if (!action.payload) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
+        const v = 'v1';
+        localStorage.removeItem(`accessToken:${v}`);
+        localStorage.removeItem(`refreshToken:${v}`);
       }
     },
     setUser(state, action: PayloadAction<{ name: string; role: UserRole; email: string }>) {

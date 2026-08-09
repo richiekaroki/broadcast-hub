@@ -28,9 +28,9 @@ export class EmailService {
     const verifyUrl = `${this.frontendUrl}/auth/verify?token=${encodeURIComponent(token)}`;
 
     await this.transporter.sendMail({
-      from:    '"BroadcastHub" <no-reply@broadcasthub.app>',
+      from:    '"Wam Broadcast Hub" <no-reply@broadcasthub.app>',
       to,
-      subject: 'Your Magic Link — BroadcastHub',
+      subject: 'Your Magic Link — Wam Broadcast Hub',
       html:    `
         <!DOCTYPE html>
         <html>
@@ -47,7 +47,7 @@ export class EmailService {
         </head>
         <body>
           <div class="card">
-            <h1>📡 BroadcastHub</h1>
+            <h1>Wam Broadcast Hub</h1>
             <p>Click the button below to sign in to your account. This link expires in 10 minutes.</p>
             <a href="${verifyUrl}" class="btn">Sign In</a>
             <p class="note">If you didn't request this link, you can safely ignore this email.</p>
@@ -55,7 +55,7 @@ export class EmailService {
         </body>
         </html>
       `,
-      text: `Sign in to BroadcastHub: ${verifyUrl}\n\nThis link expires in 10 minutes.`,
+      text: `Sign in to Wam Broadcast Hub: ${verifyUrl}\n\nThis link expires in 10 minutes.`,
     });
 
     this.logger.log(`Magic link email sent to ${to}`);

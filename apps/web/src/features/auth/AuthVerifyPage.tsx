@@ -18,9 +18,16 @@ export function AuthVerifyPage() {
     }
 
     verifyMagicLink(token)
-      .then(() => {
+      .then((res: any) => {
+        const payload = res?.accessToken
+          ? JSON.parse(atob(res.accessToken.split('.')[1]))
+          : null;
         dispatch(setAuthenticated(true));
-        dispatch(setUser({ name: 'User', role: 'viewer', email: '' }));
+        dispatch(setUser({
+          name:  payload?.email?.split('@')[0] ?? 'User',
+          role:  payload?.role ?? 'viewer',
+          email: payload?.email ?? '',
+        }));
         navigate('/', { replace: true });
       })
       .catch((err: any) => {
@@ -45,7 +52,13 @@ export function AuthVerifyPage() {
             borderRadius: '16px',
             padding: '40px 32px',
           }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
+            <div style={{ marginBottom: '16px' }}>
+              <svg width="48" height="48" fill="none" stroke="var(--color-red)" strokeWidth="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+            </div>
             <h2 style={{
               fontFamily: 'var(--font-display)',
               fontSize: '20px',
@@ -102,7 +115,12 @@ export function AuthVerifyPage() {
           borderRadius: '16px',
           padding: '40px 32px',
         }}>
-          <div className="loading-pulse" style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+          <div className="loading-pulse" style={{ marginBottom: '16px' }}>
+            <svg width="48" height="48" fill="none" stroke="var(--color-orange)" strokeWidth="1.5" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
           <h2 style={{
             fontFamily: 'var(--font-display)',
             fontSize: '20px',

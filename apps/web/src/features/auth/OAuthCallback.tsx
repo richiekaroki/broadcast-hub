@@ -52,7 +52,7 @@ export function OAuthCallback() {
       dispatch(setAuthenticated(true));
       dispatch(setUser({
         name:  payload.email?.split('@')[0] ?? 'User',
-        role:  payload.role?.replace('_', ' ') ?? 'viewer',
+        role:  payload.role ?? 'viewer',
         email: payload.email ?? '',
       }));
     } catch {

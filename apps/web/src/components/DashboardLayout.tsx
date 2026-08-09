@@ -15,7 +15,7 @@ export function DashboardLayout({ activeItem, children, headerRight }: Dashboard
   const { userName, userRole } = useAppSelector(s => s.auth);
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-base)' }}>
+    <div className="layout-root" style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-base)' }}>
       <MobileSidebar activeItem={activeItem} />
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>

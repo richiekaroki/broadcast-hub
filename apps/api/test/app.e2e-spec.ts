@@ -9,7 +9,7 @@ import { AppModule } from '../src/app.module';
  *   docker compose up -d postgres mongo redis
  *   npm run test:e2e
  */
-describe('BroadcastHub E2E', () => {
+describe('Wam Broadcast Hub E2E', () => {
   let app: INestApplication;
 
   // Tokens per role
