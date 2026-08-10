@@ -216,23 +216,6 @@ export function LoginPage() {
           </form>
         </div>
 
-        {/* Info */}
-        <div style={{
-          marginTop:    '20px',
-          background:   'rgba(232,89,60,0.06)',
-          border:       '1px solid rgba(232,89,60,0.2)',
-          borderRadius: '10px',
-          padding:      '16px',
-          fontSize:     '12px',
-          color:        'var(--color-muted)',
-        }}>
-          <div style={{ fontWeight: 600, color: 'var(--color-orange)', marginBottom: '6px', letterSpacing: '0.05em', textTransform: 'uppercase', fontSize: '11px' }}>
-            No password needed
-          </div>
-          <div style={{ lineHeight: 1.6 }}>
-            Enter your email and we'll send you a magic link to sign in. No password required.
-          </div>
-        </div>
       </div>
     </div>
   );
