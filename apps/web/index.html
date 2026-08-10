@@ -5,11 +5,67 @@
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <meta name="description" content="Wam Broadcast Hub, High-velocity media and content management platform" />
-    <title>Wam Broadcast Hub</title>
+
+    <title>Wam Broadcast Hub — Content Management for Radio, TV & Digital Publishers</title>
+    <meta name="description" content="Manage articles, broadcast schedules, and editorial workflows from one dashboard. Built for radio stations, TV networks, and digital publishers." />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://broadcast-hub-web.vercel.app" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://broadcast-hub-web.vercel.app" />
+    <meta property="og:title" content="Wam Broadcast Hub — Content Management for Radio, TV & Digital Publishers" />
+    <meta property="og:description" content="Manage articles, broadcast schedules, and editorial workflows from one dashboard. Built for radio stations, TV networks, and digital publishers." />
+    <meta property="og:image" content="https://broadcast-hub-web.vercel.app/og-image.svg" />
+    <meta property="og:site_name" content="Wam Broadcast Hub" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://broadcast-hub-web.vercel.app" />
+    <meta name="twitter:title" content="Wam Broadcast Hub — Content Management for Radio, TV & Digital Publishers" />
+    <meta name="twitter:description" content="Manage articles, broadcast schedules, and editorial workflows from one dashboard. Built for radio stations, TV networks, and digital publishers." />
+    <meta name="twitter:image" content="https://broadcast-hub-web.vercel.app/og-image.svg" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Wam Broadcast Hub",
+      "url": "https://broadcast-hub-web.vercel.app",
+      "description": "Content management platform for radio, TV, and digital publishers. Manage articles, broadcast schedules, and editorial workflows.",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- Pre-rendered content for crawlers (hidden when JS loads) -->
+    <div id="root">
+      <noscript>
+        <div style="max-width:800px;margin:0 auto;padding:40px 20px;font-family:system-ui,sans-serif">
+          <h1>Wam Broadcast Hub</h1>
+          <p>Content management platform for radio, TV, and digital publishers.</p>
+          <h2>Features</h2>
+          <ul>
+            <li>Passwordless auth (magic link + Google OAuth)</li>
+            <li>5-role access control: Super Admin, Editor, Presenter, Advertiser, Viewer</li>
+            <li>Editorial workflow: draft to review to publish/reject</li>
+            <li>Broadcast schedule management</li>
+            <li>Analytics dashboard</li>
+            <li>Responsive design (mobile + desktop)</li>
+          </ul>
+          <h2>Get Started</h2>
+          <p><a href="/login">Login to Dashboard</a></p>
+          <p>API documentation: <a href="https://wam-broadcast-hub.onrender.com/api/docs">Swagger Docs</a></p>
+        </div>
+      </noscript>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

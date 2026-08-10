@@ -8,7 +8,6 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      // Dev only — proxies /api/* to NestJS backend
       '/api': {
         target: 'http://localhost:4000',
         changeOrigin: true,
@@ -30,6 +29,4 @@ export default defineConfig({
       },
     },
   },
-
-
 });

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f1a"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="60" y="260" width="80" height="4" rx="2" fill="url(#accent)"/>
+  <text x="60" y="220" font-family="system-ui,-apple-system,sans-serif" font-size="56" font-weight="700" fill="white">Wam Broadcast Hub</text>
+  <text x="60" y="310" font-family="system-ui,-apple-system,sans-serif" font-size="24" fill="#94a3b8">Content Management for Radio, TV &amp; Digital Publishers</text>
+  <text x="60" y="370" font-family="system-ui,-apple-system,sans-serif" font-size="18" fill="#64748b">Articles  ·  Schedules  ·  Editorial Workflows  ·  Analytics</text>
+  <rect x="60" y="420" width="200" height="50" rx="8" fill="url(#accent)"/>
+  <text x="160" y="452" font-family="system-ui,-apple-system,sans-serif" font-size="16" font-weight="600" fill="white" text-anchor="middle">Get Started Free</text>
+  <circle cx="1100" cy="120" r="200" fill="#6366f1" opacity="0.08"/>
+  <circle cx="1150" cy="500" r="150" fill="#8b5cf6" opacity="0.06"/>
+  <text x="60" y="570" font-family="system-ui,-apple-system,sans-serif" font-size="14" fill="#475569">broadcast-hub-web.vercel.app</text>
+</svg>

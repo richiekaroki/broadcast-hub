@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /live-feed
+Disallow: /content
+Disallow: /stats
+Disallow: /settings
+Disallow: /auth/*
+
+Sitemap: https://broadcast-hub-web.vercel.app/sitemap.xml
