@@ -98,8 +98,17 @@ broadcast-hub/
 │           │   ├── settings/
 │           │   └── landing/
 │           └── store/          # Redux (auth slice)
+├── vercel.json                 # Monorepo build config (root)
 └── plans/                     # UX decisions, review docs
 ```
+
+---
+
+## Deployment
+
+**Vercel (frontend)**: Root `vercel.json` handles monorepo builds using `npm --prefix apps/web`. No manual config needed, just connect the repo.
+
+**Render (API)**: Set root directory to `apps/api` in Render dashboard.
 
 ---
 
