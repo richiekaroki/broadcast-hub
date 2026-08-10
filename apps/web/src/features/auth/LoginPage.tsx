@@ -194,7 +194,7 @@ export function LoginPage() {
                 marginBottom: '16px',
               }}
             >
-              {loading ? 'Sending…' : 'Send Magic Link'}
+              {loading ? 'Sending…' : 'Sign In'}
             </button>
 
             {/* Divider */}
