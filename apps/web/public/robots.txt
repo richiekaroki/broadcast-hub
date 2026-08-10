@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /portfolio
 Disallow: /dashboard
 Disallow: /live-feed
 Disallow: /content
