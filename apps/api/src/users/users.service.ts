@@ -12,7 +12,6 @@ export class UsersService {
     return this.userRepo.findOne({ where: { email } });
   }
 
-  // FIX 1 (supports Fix 6): AuthService uses this instead of its own duplicate repo
   async findById(id: string): Promise<User | null> {
     return this.userRepo.findOne({ where: { id } });
   }
@@ -37,6 +36,12 @@ export class UsersService {
       role: dto.role ?? UserRole.VIEWER,
       googleId: dto.googleId,
     });
+    return this.userRepo.save(user);
+  }
+
+  async updateProfile(id: string, dto: { name?: string }): Promise<User> {
+    const user = await this.findOne(id);
+    if (dto.name !== undefined) user.name = dto.name;
     return this.userRepo.save(user);
   }
 }

@@ -26,7 +26,7 @@ export function LoginPage() {
     return (
       <div style={{
         minHeight: '100vh',
-        background: 'var(--color-bg-page)',
+        background: 'var(--bg-base)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -34,13 +34,13 @@ export function LoginPage() {
       }}>
         <div style={{ width: '100%', maxWidth: '400px', textAlign: 'center' }}>
           <div style={{
-            background: 'var(--color-bg-card)',
-            border: '1px solid var(--color-border)',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
             borderRadius: '16px',
             padding: '40px 32px',
           }}>
             <div style={{ marginBottom: '16px' }}>
-              <svg width="48" height="48" fill="none" stroke="var(--color-orange)" strokeWidth="1.5" viewBox="0 0 24 24">
+              <svg width="48" height="48" fill="none" stroke="var(--orange)" strokeWidth="1.5" viewBox="0 0 24 24">
                 <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                 <polyline points="22,6 12,13 2,6"/>
               </svg>
@@ -55,16 +55,16 @@ export function LoginPage() {
             </h2>
             <p style={{
               fontSize: '13px',
-              color: 'var(--color-muted)',
+              color: 'var(--text-secondary)',
               lineHeight: 1.6,
               marginBottom: '20px',
             }}>
               We sent a magic link to<br />
-              <strong style={{ color: 'var(--color-text)' }}>{email}</strong>
+              <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>
             </p>
             <p style={{
               fontSize: '12px',
-              color: 'var(--color-muted)',
+              color: 'var(--text-secondary)',
               lineHeight: 1.6,
             }}>
               Click the link in the email to sign in. The link expires in 10 minutes.
@@ -76,9 +76,9 @@ export function LoginPage() {
                 marginTop: '20px',
                 padding: '10px 20px',
                 background: 'transparent',
-                border: '1px solid var(--color-border)',
+                border: '1px solid var(--border)',
                 borderRadius: '8px',
-                color: 'var(--color-text)',
+                color: 'var(--text-primary)',
                 fontSize: '13px',
                 cursor: 'pointer',
                 fontFamily: 'var(--font-body)',
@@ -108,29 +108,40 @@ export function LoginPage() {
         position:   'absolute',
         inset:      0,
         backgroundImage: `
-          linear-gradient(rgba(232,89,60,0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(232,89,60,0.04) 1px, transparent 1px)
+          linear-gradient(rgba(232,89,60,0.03) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(232,89,60,0.03) 1px, transparent 1px)
         `,
-        backgroundSize: '40px 40px',
+        backgroundSize: '48px 48px',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Glow */}
+      <div style={{
+        position: 'absolute',
+        top: '15%', left: '50%', transform: 'translateX(-50%)',
+        width: '500px', height: '300px',
+        background: 'radial-gradient(ellipse, rgba(232,89,60,0.08) 0%, transparent 65%)',
         pointerEvents: 'none',
       }} />
 
       <div className="animate-fade-up" style={{ width: '100%', maxWidth: '400px', position: 'relative', zIndex: 1 }}>
         {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <div style={{
-            width: '48px', height: '48px', background: 'var(--color-orange)',
-            borderRadius: '10px', display: 'flex', alignItems: 'center',
+            width: '56px', height: '56px',
+            background: 'linear-gradient(135deg, var(--orange), #c0392b)',
+            borderRadius: '14px', display: 'flex', alignItems: 'center',
             justifyContent: 'center', margin: '0 auto 16px',
+            boxShadow: '0 8px 32px rgba(232,89,60,0.3)',
           }}>
-            <svg width="24" height="24" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
+            <svg width="28" height="28" fill="none" stroke="#fff" strokeWidth="2" viewBox="0 0 24 24">
               <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
             </svg>
           </div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 700, letterSpacing: '0.04em' }}>
             Wam Broadcast Hub
           </div>
-          <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '6px' }}>
             Sign in to your workspace
           </div>
         </div>
@@ -160,7 +171,7 @@ export function LoginPage() {
               <div style={{
                 background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
                 borderRadius: '8px', padding: '10px 14px', marginBottom: '16px',
-                fontSize: '13px', color: 'var(--color-red)',
+                fontSize: '13px', color: 'var(--red)',
               }}>
                 {error}
               </div>
@@ -171,7 +182,7 @@ export function LoginPage() {
               style={{
                 width:        '100%',
                 padding:      '13px',
-                background:   loading ? 'rgba(232,89,60,0.5)' : 'var(--color-orange)',
+                background:   loading ? 'rgba(232,89,60,0.5)' : 'var(--orange)',
                 border:       'none',
                 borderRadius: '8px',
                 color:        '#fff',
@@ -179,12 +190,21 @@ export function LoginPage() {
                 fontWeight:   600,
                 cursor:       loading ? 'not-allowed' : 'pointer',
                 fontFamily:   'var(--font-body)',
-                transition:   'background 0.15s',
-                marginBottom: '12px',
+                transition:   'background 0.15s, transform 0.15s, box-shadow 0.15s',
+                marginBottom: '16px',
               }}
             >
               {loading ? 'Sending…' : 'Send Magic Link'}
             </button>
+
+            {/* Divider */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px',
+            }}>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+              <span style={{ fontSize: '11px', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>or</span>
+              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+            </div>
 
             {/* Google OAuth */}
             <a
@@ -196,13 +216,13 @@ export function LoginPage() {
                 gap:          '10px',
                 width:        '100%',
                 padding:      '12px',
-                background:   'transparent',
-                border:       '1px solid var(--color-border)',
+                background:   'var(--bg-elevated)',
+                border:       '1px solid var(--border)',
                 borderRadius: '8px',
-                color:        'var(--color-text)',
+                color:        'var(--text-primary)',
                 fontSize:     '14px',
                 textDecoration: 'none',
-                transition:   'border-color 0.15s',
+                transition:   'border-color 0.15s, background 0.15s',
               }}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
@@ -216,6 +236,13 @@ export function LoginPage() {
           </form>
         </div>
 
+        {/* Helper text */}
+        <div style={{
+          marginTop: '20px', textAlign: 'center',
+          fontSize: '12px', color: 'var(--text-tertiary)', lineHeight: 1.6,
+        }}>
+          No password required. We'll send a secure link to your inbox.
+        </div>
       </div>
     </div>
   );
@@ -225,7 +252,7 @@ const labelStyle: React.CSSProperties = {
   display:     'block',
   fontSize:    '12px',
   fontWeight:  500,
-  color:       'var(--color-muted)',
+  color:       'var(--text-secondary)',
   marginBottom: '6px',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
@@ -234,10 +261,10 @@ const labelStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width:        '100%',
   padding:      '11px 14px',
-  background:   'var(--color-bg-elevated)',
-  border:       '1px solid var(--color-border)',
+  background:   'var(--bg-elevated)',
+  border:       '1px solid var(--border)',
   borderRadius: '8px',
-  color:        'var(--color-text)',
+  color:        'var(--text-primary)',
   fontSize:     '14px',
   fontFamily:   'var(--font-body)',
   outline:      'none',
