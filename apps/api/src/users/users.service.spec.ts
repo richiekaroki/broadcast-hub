@@ -16,7 +16,7 @@ const mockUser: User = {
 };
 
 const mockRepo = {
-  find:   jest.fn().mockResolvedValue([mockUser]),
+  find:    jest.fn().mockResolvedValue([mockUser]),
   findOne: jest.fn().mockResolvedValue(mockUser),
   save:    jest.fn().mockImplementation(u => Promise.resolve(u)),
   create:  jest.fn(dto => dto),
@@ -26,6 +26,12 @@ describe('UsersService', () => {
   let service: UsersService;
 
   beforeEach(async () => {
+    // Restore defaults before each test
+    mockRepo.findOne.mockResolvedValue(mockUser);
+    mockRepo.find.mockResolvedValue([mockUser]);
+    mockRepo.save.mockImplementation(u => Promise.resolve(u));
+    mockRepo.create.mockImplementation(dto => dto);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
@@ -34,7 +40,6 @@ describe('UsersService', () => {
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    jest.clearAllMocks();
   });
 
   it('should be defined', () => {

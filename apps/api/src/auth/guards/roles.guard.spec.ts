@@ -15,38 +15,39 @@ function mockContext(user?: { role: string }) {
 
 describe('RolesGuard', () => {
   let guard: RolesGuard;
-  let reflector: Reflector;
+  let reflector: { getAllAndOverride: jest.Mock };
 
   beforeEach(() => {
-    reflector = new Reflector();
-    guard = new RolesGuard(reflector);
+    reflector = { getAllAndOverride: jest.fn().mockReturnValue(null) };
+    guard = new RolesGuard(reflector as unknown as Reflector);
   });
 
   it('allows access when no roles are required', () => {
+    reflector.getAllAndOverride.mockReturnValue(null);
     const ctx = mockContext({ role: UserRole.VIEWER });
     expect(guard.canActivate(ctx)).toBe(true);
   });
 
   it('allows access when user has a required role', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.EDITOR, UserRole.SUPER_ADMIN]);
+    reflector.getAllAndOverride.mockReturnValue([UserRole.EDITOR, UserRole.SUPER_ADMIN]);
     const ctx = mockContext({ role: UserRole.SUPER_ADMIN });
     expect(guard.canActivate(ctx)).toBe(true);
   });
 
   it('denies access when user has a different role', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.SUPER_ADMIN]);
+    reflector.getAllAndOverride.mockReturnValue([UserRole.SUPER_ADMIN]);
     const ctx = mockContext({ role: UserRole.VIEWER });
     expect(guard.canActivate(ctx)).toBe(false);
   });
 
   it('denies access when user is undefined', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([UserRole.SUPER_ADMIN]);
+    reflector.getAllAndOverride.mockReturnValue([UserRole.SUPER_ADMIN]);
     const ctx = mockContext(undefined);
     expect(guard.canActivate(ctx)).toBe(false);
   });
 
   it('allows access when roles decorator returns empty array', () => {
-    jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue([]);
+    reflector.getAllAndOverride.mockReturnValue([]);
     const ctx = mockContext({ role: UserRole.VIEWER });
     expect(guard.canActivate(ctx)).toBe(true);
   });
