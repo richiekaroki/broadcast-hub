@@ -90,11 +90,12 @@ async function seed() {
     for (const c of CONTENT_ITEMS) {
       const authorId = c.status === 'draft' ? editorUser.id : adminUser.id;
 
+      const daysAgo = randomInt(1, 10);
       const [row] = await qr.query(
         `INSERT INTO content ("id", "title", "body", "status", "author_id", "createdAt", "updatedAt")
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW() - INTERVAL '${randomInt(1, 10)} days', NOW())
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, NOW() - ($5 || ' days')::interval, NOW())
          RETURNING id`,
-        [c.title, c.body, c.status, authorId],
+        [c.title, c.body, c.status, authorId, daysAgo],
       );
       createdContent.push(row);
       console.log(`📄  "${c.title}"  [${c.status}]`);
@@ -111,19 +112,21 @@ async function seed() {
 
       for (let i = 0; i < viewCount; i++) {
         const userId = randomInt(0, 1) === 0 ? viewerUser.id : adminUser.id;
+        const viewDaysAgo = randomInt(0, 6);
         await qr.query(
           `INSERT INTO analytics_events ("id", "entityType", "entityId", "userId", "action", "meta", "createdAt")
-           VALUES (gen_random_uuid(), 'content', $1, $2, 'view', '{"source":"web"}', NOW() - INTERVAL '${randomInt(0, 6)} days')`,
-          [c.id, userId],
+           VALUES (gen_random_uuid(), 'content', $1, $2, 'view', '{"source":"web"}', NOW() - ($3 || ' days')::interval)`,
+          [c.id, userId, viewDaysAgo],
         );
         eventCount++;
       }
 
       for (let i = 0; i < clickCount; i++) {
+        const clickDaysAgo = randomInt(0, 6);
         await qr.query(
           `INSERT INTO analytics_events ("id", "entityType", "entityId", "userId", "action", "meta", "createdAt")
-           VALUES (gen_random_uuid(), 'content', $1, $2, 'click', '{"target":"read-more"}', NOW() - INTERVAL '${randomInt(0, 6)} days')`,
-          [c.id, viewerUser.id],
+           VALUES (gen_random_uuid(), 'content', $1, $2, 'click', '{"target":"read-more"}', NOW() - ($3 || ' days')::interval)`,
+          [c.id, viewerUser.id, clickDaysAgo],
         );
         eventCount++;
       }

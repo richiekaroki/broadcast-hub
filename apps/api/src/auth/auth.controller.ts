@@ -32,6 +32,7 @@ export class AuthController {
 
   // ── Verify magic link ─────────────────────────────────────────────────────
   @Get('magic-link/verify')
+  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 req/min per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify magic link token and receive JWT pair' })
   verifyMagicLink(@Query('token') token: string) {
@@ -68,6 +69,7 @@ export class AuthController {
 
   // ── Refresh ────────────────────────────────────────────────────────────────
   @Post('refresh')
+  @Throttle({ default: { limit: 20, ttl: 60000 } }) // 20 req/min per IP
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token (rotates refresh token)' })
   async refresh(@Body() dto: RefreshDto) {

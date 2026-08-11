@@ -6,10 +6,25 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
+  const isProduction = process.env.NODE_ENV === 'production';
 
   const app = await NestFactory.create(AppModule);
 
-  app.use(helmet());
+  app.use(helmet({
+    contentSecurityPolicy: isProduction ? {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        frameAncestors: ["'none'"],
+      },
+    } : false,
+    hsts: { maxAge: 31536000, includeSubDomains: true },
+  }));
 
   app.enableCors({
     origin: process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -17,13 +32,16 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  const config = new DocumentBuilder()
-    .setTitle('Wam Broadcast Hub API')
-    .setDescription('Media & broadcasting management platform')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
+  if (!isProduction) {
+    const config = new DocumentBuilder()
+      .setTitle('Wam Broadcast Hub API')
+      .setDescription('Media & broadcasting management platform')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    SwaggerModule.setup('api/docs', app, SwaggerModule.createDocument(app, config));
+    logger.log(`Swagger docs: http://localhost:${process.env.PORT || 4000}/api/docs`);
+  }
 
   app.getHttpAdapter().get('/', (_req, res) => {
     res.json({
@@ -44,7 +62,6 @@ async function bootstrap() {
   await app.listen(port);
 
   logger.log(`API running on http://localhost:${port}`);
-  logger.log(`Swagger docs: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();

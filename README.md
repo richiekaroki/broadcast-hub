@@ -32,7 +32,7 @@ Manage articles, broadcast schedules, and editorial workflows from one dashboard
 |---------|-----|
 | Frontend | [broadcast-hub-web.vercel.app](https://broadcast-hub-web.vercel.app) |
 | API | [wam-broadcast-hub.onrender.com](https://wam-broadcast-hub.onrender.com) |
-| Swagger | [wam-broadcast-hub.onrender.com/api/docs](https://wam-broadcast-hub.onrender.com/api/docs) |
+| API Docs | Available in development only (`/api/docs`) |
 
 ---
 
@@ -60,10 +60,11 @@ cd ../web && npm run dev         # → http://localhost:3000
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | NestJS v11, TypeORM, Passport, Swagger |
+| Backend | NestJS v11, TypeORM, Passport, Swagger (dev only) |
 | Frontend | React 19, Vite, Redux Toolkit, TanStack Query |
 | Database | PostgreSQL (Neon) |
 | Auth | JWT (dual-secret), magic link, Google OAuth2 |
+| Security | Helmet (CSP, HSTS), rate limiting, class-validator |
 | Deploy | Render (API), Vercel (frontend) |
 
 ---
@@ -125,7 +126,7 @@ broadcast-hub/
 | `GET` | `/api/v1/programs` | JWT | Broadcast schedule |
 | `GET` | `/api/v1/dashboard` | JWT | Dashboard stats |
 
-Full docs at `/api/docs`.
+Full docs at `/api/docs` (development only).
 
 ---
 
