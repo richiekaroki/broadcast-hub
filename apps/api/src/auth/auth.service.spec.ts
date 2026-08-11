@@ -108,11 +108,19 @@ describe('AuthService', () => {
 
     it('returns same success message even when email not found (no enumeration)', async () => {
       mockUsersService.findByEmail.mockResolvedValue(null);
+      mockUsersService.create.mockResolvedValue({
+        ...mockUser,
+        email: 'unknown@example.com',
+        role: UserRole.VIEWER,
+      });
 
       const result = await service.requestMagicLink('unknown@example.com');
 
       expect(result).toHaveProperty('message');
-      expect(mockMagicLinkRepo.save).not.toHaveBeenCalled();
+      expect(mockUsersService.create).toHaveBeenCalledWith(
+        expect.objectContaining({ email: 'unknown@example.com', role: UserRole.VIEWER }),
+      );
+      expect(mockMagicLinkRepo.save).toHaveBeenCalled();
     });
 
     it('deletes old tokens for the same email before creating new one', async () => {
