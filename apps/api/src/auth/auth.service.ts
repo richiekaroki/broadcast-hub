@@ -32,11 +32,12 @@ export class AuthService {
   // ── Request magic link ──────────────────────────────────────────────────────
   async requestMagicLink(email: string): Promise<{ message: string }> {
     // Always return success to prevent email enumeration
-    const user = await this.usersService.findByEmail(email);
+    let user = await this.usersService.findByEmail(email);
 
+    // Auto-create new users as viewer
     if (!user) {
-      // Silently succeed — don't reveal whether email exists
-      return { message: 'If an account exists, a magic link has been sent' };
+      const name = email.split('@')[0].replace(/\./g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      user = await this.usersService.create({ email, name, role: UserRole.VIEWER });
     }
 
     // Invalidate any previous unused tokens for this user
