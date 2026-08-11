@@ -17,6 +17,7 @@ const LiveFeedPage   = lazy(() => import('./features/live-feed/LiveFeedPage').th
 const ContentPage    = lazy(() => import('./features/content/ContentPage').then(m => ({ default: m.ContentPage })));
 const StatsPage      = lazy(() => import('./features/stats/StatsPage').then(m => ({ default: m.StatsPage })));
 const SettingsPage   = lazy(() => import('./features/settings/SettingsPage').then(m => ({ default: m.SettingsPage })));
+const UsersPage      = lazy(() => import('./features/users/UsersPage').then(m => ({ default: m.UsersPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,6 +51,7 @@ function AppRoutes() {
           <Route path="/content"     element={<ErrorBoundary><PrivateRoute><ContentPage   /></PrivateRoute></ErrorBoundary>} />
           <Route path="/stats"       element={<ErrorBoundary><PrivateRoute><StatsPage     /></PrivateRoute></ErrorBoundary>} />
           <Route path="/settings"    element={<ErrorBoundary><PrivateRoute><SettingsPage  /></PrivateRoute></ErrorBoundary>} />
+          <Route path="/users"       element={<ErrorBoundary><PrivateRoute><UsersPage     /></PrivateRoute></ErrorBoundary>} />
 
           {/* Fallback */}
           <Route path="*" element={<LandingPage />} />

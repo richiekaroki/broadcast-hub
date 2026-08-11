@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 
-type NavItem = 'dashboard' | 'live' | 'content' | 'stats' | 'settings';
+type NavItem = 'dashboard' | 'live' | 'content' | 'stats' | 'users' | 'settings';
 
 interface MobileSidebarProps {
   activeItem?: NavItem;

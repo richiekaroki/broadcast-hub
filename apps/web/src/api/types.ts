@@ -40,3 +40,22 @@ export interface ProgramsResponse {
   page: number;
   limit: number;
 }
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  name: string;
+  role: string;
+  createdAt: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actorId: string;
+  actorEmail: string;
+  action: string;
+  targetType: string;
+  targetId: string;
+  meta?: Record<string, any>;
+  createdAt: string;
+}

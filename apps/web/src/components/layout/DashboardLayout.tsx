@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { MobileSidebar } from './MobileSidebar';
 import { useAppSelector } from '../../store/hooks';
 
-type NavItem = 'dashboard' | 'live' | 'content' | 'stats' | 'settings';
+type NavItem = 'dashboard' | 'live' | 'content' | 'stats' | 'users' | 'settings';
 
 interface DashboardLayoutProps {
   activeItem: NavItem;
