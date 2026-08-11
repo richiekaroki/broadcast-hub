@@ -44,4 +44,14 @@ export class UsersService {
     if (dto.name !== undefined) user.name = dto.name;
     return this.userRepo.save(user);
   }
+
+  async findAll(): Promise<User[]> {
+    return this.userRepo.find({ order: { createdAt: 'DESC' } });
+  }
+
+  async updateRole(id: string, role: UserRole): Promise<User> {
+    const user = await this.findOne(id);
+    user.role = role;
+    return this.userRepo.save(user);
+  }
 }

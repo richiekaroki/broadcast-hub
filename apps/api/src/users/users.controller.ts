@@ -1,8 +1,11 @@
-import { Controller, Get, Patch, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Patch, Param, Body, UseGuards, ForbiddenException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { UsersService } from './users.service';
+import { UserRole } from './enums/user-role.enum';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiTags('Users')
@@ -38,6 +41,44 @@ export class UsersController {
       name: updated.name,
       role: updated.role,
       createdAt: updated.createdAt,
+    };
+  }
+
+  // ── Admin endpoints ─────────────────────────────────────────────────────────
+
+  @Get()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'List all users (admin only)' })
+  async listUsers() {
+    const users = await this.usersService.findAll();
+    return users.map(u => ({
+      id: u.id,
+      email: u.email,
+      name: u.name,
+      role: u.role,
+      createdAt: u.createdAt,
+    }));
+  }
+
+  @Patch(':id/role')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Change user role (admin only)' })
+  async changeRole(
+    @CurrentUser() admin: { id: string },
+    @Param('id') targetUserId: string,
+    @Body('role') newRole: UserRole,
+  ) {
+    if (admin.id === targetUserId) {
+      throw new ForbiddenException('Cannot change your own role');
+    }
+    const updated = await this.usersService.updateRole(targetUserId, newRole);
+    return {
+      id: updated.id,
+      email: updated.email,
+      name: updated.name,
+      role: updated.role,
     };
   }
 }
