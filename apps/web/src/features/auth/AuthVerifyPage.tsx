@@ -10,12 +10,10 @@ export function AuthVerifyPage() {
   const [searchParams] = useSearchParams();
   const [error,   setError]   = useState('');
 
+  const token = searchParams.get('token');
+
   useEffect(() => {
-    const token = searchParams.get('token');
-    if (!token) {
-      setError('Missing token');
-      return;
-    }
+    if (!token) return;
 
     verifyMagicLink(token)
       .then((res: any) => {
@@ -33,9 +31,10 @@ export function AuthVerifyPage() {
       .catch((err: any) => {
         setError(err.message || 'Invalid or expired magic link');
       });
-  }, [searchParams, dispatch, navigate]);
+  }, [token, searchParams, dispatch, navigate]);
 
-  if (error) {
+  if (!token || error) {
+    const message = !token ? 'Missing token' : error;
     return (
       <div style={{
         minHeight: '100vh',
@@ -73,7 +72,7 @@ export function AuthVerifyPage() {
               lineHeight: 1.6,
               marginBottom: '20px',
             }}>
-              {error}
+              {message}
             </p>
             <a
               href="/login"

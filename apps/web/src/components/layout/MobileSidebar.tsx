@@ -17,11 +17,12 @@ interface MobileSidebarProps {
  */
 export function MobileSidebar({ activeItem }: MobileSidebarProps) {
   const [open,  setOpen]  = useState(false);
-  const [isMob, setIsMob] = useState(false);
+  const [isMob, setIsMob] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 1023px)').matches : false,
+  );
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 1023px)');
-    setIsMob(mq.matches);
     const handler = (e: MediaQueryListEvent) => {
       setIsMob(e.matches);
       if (!e.matches) setOpen(false);

@@ -30,21 +30,19 @@ export function UsersPage() {
   const [tab, setTab] = useState<'users' | 'audit'>('users');
 
   useEffect(() => {
-    loadData();
+    let cancelled = false;
+    (async () => {
+      try {
+        const [u, l] = await Promise.all([listUsers(), getAuditLogs()]);
+        if (!cancelled) { setUsers(u); setLogs(l); }
+      } catch (err: any) {
+        if (!cancelled) toast.error(err.message || 'Failed to load data');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, []);
-
-  async function loadData() {
-    setLoading(true);
-    try {
-      const [u, l] = await Promise.all([listUsers(), getAuditLogs()]);
-      setUsers(u);
-      setLogs(l);
-    } catch (err: any) {
-      toast.error(err.message || 'Failed to load data');
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleRoleChange(userId: string, newRole: string) {
     try {

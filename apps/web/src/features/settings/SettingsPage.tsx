@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { DashboardLayout } from '../../components/layout/DashboardLayout';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
 import { setAuthenticated, setUser } from '../../store/authSlice';
@@ -14,8 +14,6 @@ export function SettingsPage() {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(userName);
   const [saving, setSaving] = useState(false);
-
-  useEffect(() => { setName(userName); }, [userName]);
 
   async function handleSave() {
     if (!name.trim() || name.trim() === userName) {
